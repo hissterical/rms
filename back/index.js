@@ -1,8 +1,9 @@
-import express from 'express';
-import dotenv from 'dotenv';
+import express from "express";
 
-
+import dotenv from "dotenv";
 dotenv.config();
+
+import pool from "./config/db.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
