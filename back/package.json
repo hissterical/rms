@@ -3,13 +3,18 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "nodemon --exec ts-node index.ts",
+    "migrate": "node-pg-migrate"
+  },
   "devDependencies": {
     "@types/bun": "latest",
+    "node-pg-migrate": "^8.0.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.0.0"
   },
   "dependencies": {
     "dotenv": "^17.2.2",
