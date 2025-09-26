@@ -1,11 +1,20 @@
-// plugins/db.js
-// idk if we should do this or pool. 
-const fp = require('fastify-plugin');
+//connect to postgres db
+import pkg from "pg";
+const { Pool } = pkg;
+import dotenv from "dotenv";
+dotenv.config();
 
-async function dbConnector(fastify) {
-  fastify.register(require('fastify-postgres'), {
-    connectionString: process.env.DATABASE_URL || 'postgres://postgres:password@localhost:5432/qrmenu'
-  });
-}
+const pool = new Pool({
+  user: process.env.PG_USER,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DATABASE,
+  password: process.env.PG_PASSWORD,
+  port: Number(process.env.PG_PORT) || 5432,
+});
 
-module.exports = fp(dbConnector);
+pool
+  .connect()
+  .then(() => console.log("Connected to Postgres"))
+  .catch((err) => console.error("Connection error", err));
+
+export default pool;
