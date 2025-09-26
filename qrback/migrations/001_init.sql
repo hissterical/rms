@@ -2,6 +2,7 @@ CREATE TABLE restaurants (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
   contact_email text,
+  address text,
   created_at timestamptz DEFAULT now()
 );
 
