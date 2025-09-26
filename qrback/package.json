@@ -1,0 +1,19 @@
+{
+  "name": "qrback",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "fastify": "^5.6.1",
+    "fastify-cors": "^6.1.0",
+    "fastify-env": "^2.2.0",
+    "fastify-postgres": "^3.7.0",
+    "qrcode": "^1.5.4"
+  }
+}
