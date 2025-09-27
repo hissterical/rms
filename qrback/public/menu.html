@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Menu</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #f8f9fa;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .restaurant-header {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      .restaurant-name {
+        font-size: 2.5em;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+
+      .restaurant-info {
+        color: #666;
+        font-size: 1.1em;
+      }
+
+      .table-info {
+        background: #e74c3c;
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: 600;
+      }
+
+      .category {
+        margin-bottom: 40px;
+      }
+
+      .category-title {
+        font-size: 1.8em;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #e74c3c;
+        font-weight: 600;
+      }
+
+      .menu-items {
+        display: grid;
+        gap: 20px;
+      }
+
+      .menu-item {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+      }
+
+      .menu-item:hover {
+        transform: translateY(-2px);
+      }
+
+      .menu-item-content {
+        padding: 20px;
+      }
+
+      .menu-item.has-image {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 0;
+      }
+
+      .menu-item-image {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        background: #f0f0f0;
+      }
+
+      .menu-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+      }
+
+      .menu-item-name {
+        font-size: 1.3em;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+      }
+
+      .menu-item-price {
+        font-size: 1.2em;
+        font-weight: 700;
+        color: #e74c3c;
+        white-space: nowrap;
+        margin-left: 15px;
+      }
+
+      .menu-item-description {
+        color: #666;
+        font-size: 0.95em;
+        line-height: 1.5;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 60px 20px;
+      }
+
+      .loading-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #e74c3c;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error-message {
+        background: #ff4757;
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      .no-menu {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        text-align: center;
+        color: #666;
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          padding: 15px;
+        }
+
+        .restaurant-header {
+          padding: 20px;
+        }
+
+        .restaurant-name {
+          font-size: 2em;
+        }
+
+        .menu-item.has-image {
+          grid-template-columns: 100px 1fr;
+        }
+
+        .menu-item-image {
+          width: 100px;
+          height: 100px;
+        }
+
+        .menu-item-content {
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading menu...</p>
+      </div>
+
+      <div id="error-container" style="display: none">
+        <div class="error-message">
+          <h3>Oops! Something went wrong</h3>
+          <p id="error-message"></p>
+        </div>
+      </div>
+
+      <div id="menu-container" style="display: none">
+        <div class="restaurant-header">
+          <h1 class="restaurant-name" id="restaurant-name"></h1>
+          <div class="restaurant-info">
+            <p id="restaurant-address"></p>
+          </div>
+        </div>
+
+        <div class="table-info">
+          <p>
+            You are viewing the menu for Table <span id="table-number"></span>
+          </p>
+        </div>
+
+        <div id="menu-content"></div>
+
+        <div id="no-menu" class="no-menu" style="display: none">
+          <h3>Menu Coming Soon</h3>
+          <p>
+            This restaurant hasn't added any menu items yet. Please check back
+            later!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Get restaurant ID and table number from URL path
+      const pathParts = window.location.pathname.split("/");
+      const restaurantId = pathParts[2];
+      const tableNumber = pathParts[3];
+
+      async function loadMenu() {
+        try {
+          const response = await fetch(
+            `/api/menus/${restaurantId}/${tableNumber}`
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          // Hide loading
+          document.getElementById("loading").style.display = "none";
+
+          // Show menu container
+          document.getElementById("menu-container").style.display = "block";
+
+          // Populate restaurant info
+          document.getElementById("restaurant-name").textContent =
+            data.restaurant.name;
+          document.getElementById("restaurant-address").textContent =
+            data.restaurant.address || "";
+          document.getElementById("table-number").textContent =
+            data.table_number;
+
+          // Check if menu has items
+          const menuCategories = Object.keys(data.menu);
+          if (menuCategories.length === 0) {
+            document.getElementById("no-menu").style.display = "block";
+            return;
+          }
+
+          // Populate menu
+          const menuContent = document.getElementById("menu-content");
+          menuContent.innerHTML = "";
+
+          menuCategories.forEach((category) => {
+            const items = data.menu[category];
+            if (items.length === 0) return;
+
+            const categoryDiv = document.createElement("div");
+            categoryDiv.className = "category";
+
+            const categoryTitle = document.createElement("h2");
+            categoryTitle.className = "category-title";
+            categoryTitle.textContent = category;
+            categoryDiv.appendChild(categoryTitle);
+
+            const itemsDiv = document.createElement("div");
+            itemsDiv.className = "menu-items";
+
+            items.forEach((item) => {
+              const itemDiv = document.createElement("div");
+              itemDiv.className = item.image_url
+                ? "menu-item has-image"
+                : "menu-item";
+
+              let itemHTML = "";
+
+              if (item.image_url) {
+                itemHTML += `<img src="${item.image_url}" alt="${item.name}" class="menu-item-image">`;
+              }
+
+              itemHTML += `
+                            <div class="menu-item-content">
+                                <div class="menu-item-header">
+                                    <h3 class="menu-item-name">${item.name}</h3>
+                                    <span class="menu-item-price">$${parseFloat(
+                                      item.price
+                                    ).toFixed(2)}</span>
+                                </div>
+                                ${
+                                  item.description
+                                    ? `<p class="menu-item-description">${item.description}</p>`
+                                    : ""
+                                }
+                            </div>
+                        `;
+
+              itemDiv.innerHTML = itemHTML;
+              itemsDiv.appendChild(itemDiv);
+            });
+
+            categoryDiv.appendChild(itemsDiv);
+            menuContent.appendChild(categoryDiv);
+          });
+        } catch (error) {
+          console.error("Error loading menu:", error);
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("error-container").style.display = "block";
+          document.getElementById("error-message").textContent =
+            "Failed to load the menu. Please try again later.";
+        }
+      }
+
+      // Load menu when page loads
+      window.addEventListener("load", loadMenu);
+    </script>
+  </body>
+</html>

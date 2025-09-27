@@ -1,3 +1,8 @@
+storage/menu-images/*
+storage/qrs/*
+
+
+
 # dependencies (bun install)
 node_modules
 
