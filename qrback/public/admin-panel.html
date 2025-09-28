@@ -594,6 +594,287 @@
         font-size: 1.5em;
         margin-bottom: 5px;
       }
+
+      /* Orders Tab Styles */
+      .orders-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .stat-card h3 {
+        margin: 0 0 10px 0;
+        color: #666;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .stat-number {
+        font-size: 2em;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .stat-number.pending {
+        color: #f39c12;
+      }
+
+      .stat-number.preparing {
+        color: #3498db;
+      }
+
+      .stat-number.ready {
+        color: #27ae60;
+      }
+
+      .stat-number.revenue {
+        color: #e74c3c;
+      }
+
+      .orders-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .refresh-btn {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .refresh-btn:hover {
+        background: #2980b9;
+      }
+
+      #status-filter {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: white;
+      }
+
+      .order-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+        transition: transform 0.2s ease;
+      }
+
+      .order-card:hover {
+        transform: translateY(-2px);
+      }
+
+      .order-header {
+        background: #f8f9fa;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .order-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .order-number {
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .table-number {
+        background: #e74c3c;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: bold;
+      }
+
+      .order-time {
+        color: #666;
+        font-size: 0.9em;
+      }
+
+      .order-status {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.8em;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      .status-pending {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .status-preparing {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+
+      .status-ready {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-delivered {
+        background: #e2e3e5;
+        color: #383d41;
+      }
+
+      .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .order-body {
+        padding: 20px;
+      }
+
+      .customer-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .customer-name {
+        font-weight: 600;
+        color: #2c3e50;
+      }
+
+      .order-total {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #e74c3c;
+      }
+
+      .order-items {
+        margin-bottom: 15px;
+      }
+
+      .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .order-item:last-child {
+        border-bottom: none;
+      }
+
+      .item-name {
+        font-weight: 600;
+      }
+
+      .item-quantity {
+        color: #666;
+        margin-left: 10px;
+      }
+
+      .item-price {
+        font-weight: 600;
+        color: #2c3e50;
+      }
+
+      .special-instructions {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        font-style: italic;
+        color: #666;
+      }
+
+      .order-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .status-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9em;
+        transition: background 0.2s ease;
+      }
+
+      .btn-preparing {
+        background: #3498db;
+        color: white;
+      }
+
+      .btn-preparing:hover {
+        background: #2980b9;
+      }
+
+      .btn-ready {
+        background: #27ae60;
+        color: white;
+      }
+
+      .btn-ready:hover {
+        background: #229954;
+      }
+
+      .btn-delivered {
+        background: #95a5a6;
+        color: white;
+      }
+
+      .btn-delivered:hover {
+        background: #7f8c8d;
+      }
+
+      .btn-cancel {
+        background: #e74c3c;
+        color: white;
+      }
+
+      .btn-cancel:hover {
+        background: #c0392b;
+      }
+
+      .no-data {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        color: #666;
+      }
+
       @media (max-width: 768px) {
         .header-content {
           flex-direction: column;
@@ -643,6 +924,7 @@
         <button class="tab-button" onclick="showTab('tables')">
           Tables & QR Codes
         </button>
+        <button class="tab-button" onclick="showTab('orders')">Orders</button>
       </div>
 
       <!-- Menu Tab -->
@@ -683,6 +965,63 @@
         </div>
 
         <div id="tables-container" style="display: none"></div>
+      </div>
+
+      <!-- Orders Tab -->
+      <div id="orders-tab" class="tab-content">
+        <div class="orders-stats" id="orders-stats">
+          <div class="stat-card">
+            <h3>Today's Orders</h3>
+            <div class="stat-number" id="total-orders">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Pending</h3>
+            <div class="stat-number pending" id="pending-orders">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Preparing</h3>
+            <div class="stat-number preparing" id="preparing-orders">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Ready</h3>
+            <div class="stat-number ready" id="ready-orders">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Revenue</h3>
+            <div class="stat-number revenue" id="total-revenue">$0.00</div>
+          </div>
+        </div>
+
+        <div class="orders-controls">
+          <button class="refresh-btn" onclick="loadOrders()">
+            🔄 Refresh Orders
+          </button>
+          <select id="status-filter" onchange="filterOrders()">
+            <option value="">All Orders</option>
+            <option value="pending">Pending</option>
+            <option value="preparing">Preparing</option>
+            <option value="ready">Ready</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <div id="orders-loading" class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading orders...</p>
+        </div>
+
+        <div id="orders-container" style="display: none">
+          <div id="orders-list"></div>
+        </div>
+
+        <div id="no-orders" class="no-data" style="display: none">
+          <h3>No Orders Yet</h3>
+          <p>
+            Orders will appear here when customers place them through the QR
+            menu.
+          </p>
+        </div>
       </div>
     </div>
 
@@ -836,6 +1175,8 @@
         // Load data if needed
         if (tabName === "tables") {
           loadTables();
+        } else if (tabName === "orders") {
+          loadOrders();
         }
       }
 
@@ -1398,6 +1739,244 @@
 
       // Load menu items on page load
       loadMenuItems();
+
+      // Orders Management Functions
+      let orders = [];
+
+      async function loadOrders() {
+        const ordersLoading = document.getElementById("orders-loading");
+        const ordersContainer = document.getElementById("orders-container");
+        const noOrders = document.getElementById("no-orders");
+
+        try {
+          ordersLoading.style.display = "block";
+          ordersContainer.style.display = "none";
+          noOrders.style.display = "none";
+
+          const response = await fetch(
+            `/api/orders/${adminInfo.restaurant_id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${adminToken}`,
+              },
+            }
+          );
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+              `HTTP error! status: ${response.status}, message: ${errorText}`
+            );
+          }
+
+          const responseText = await response.text();
+          let data;
+          try {
+            data = JSON.parse(responseText);
+          } catch (e) {
+            console.error("Invalid JSON response:", responseText);
+            throw new Error("Invalid JSON response from server");
+          }
+
+          orders = data.orders || [];
+
+          ordersLoading.style.display = "none";
+
+          if (orders.length === 0) {
+            noOrders.style.display = "block";
+          } else {
+            ordersContainer.style.display = "block";
+            displayOrders(orders);
+          }
+
+          // Load and display statistics
+          await loadOrderStats();
+        } catch (error) {
+          console.error("Error loading orders:", error);
+          ordersLoading.style.display = "none";
+          showMessage("Error loading orders: " + error.message, "error");
+        }
+      }
+
+      async function loadOrderStats() {
+        try {
+          const response = await fetch(
+            `/api/orders/${adminInfo.restaurant_id}/stats`,
+            {
+              headers: {
+                Authorization: `Bearer ${adminToken}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const stats = data.stats;
+
+            document.getElementById("total-orders").textContent =
+              stats.total_orders;
+            document.getElementById("pending-orders").textContent =
+              stats.pending_orders;
+            document.getElementById("preparing-orders").textContent =
+              stats.preparing_orders;
+            document.getElementById("ready-orders").textContent =
+              stats.ready_orders;
+            document.getElementById(
+              "total-revenue"
+            ).textContent = `$${parseFloat(stats.total_revenue).toFixed(2)}`;
+          }
+        } catch (error) {
+          console.error("Error loading order stats:", error);
+        }
+      }
+
+      function displayOrders(ordersToShow) {
+        const ordersList = document.getElementById("orders-list");
+
+        ordersList.innerHTML = ordersToShow
+          .map((order) => {
+            const orderTime = new Date(order.created_at).toLocaleString();
+            let items = [];
+
+            // Safely parse JSON items
+            try {
+              items =
+                typeof order.items === "string"
+                  ? JSON.parse(order.items)
+                  : order.items;
+            } catch (e) {
+              console.error("Error parsing order items:", e, order.items);
+              items = []; // fallback to empty array
+            }
+
+            return `
+            <div class="order-card">
+              <div class="order-header">
+                <div class="order-info">
+                  <div class="order-number">Order #${order.id}</div>
+                  <div class="table-number">Table ${order.table_number}</div>
+                  <div class="order-time">${orderTime}</div>
+                </div>
+                <div class="order-status status-${order.status}">${
+              order.status
+            }</div>
+              </div>
+              
+              <div class="order-body">
+                <div class="customer-info">
+                  <div class="customer-name">👤 ${order.customer_name}</div>
+                  <div class="order-total">$${parseFloat(
+                    order.total_amount
+                  ).toFixed(2)}</div>
+                </div>
+                
+                <div class="order-items">
+                  ${items
+                    .map(
+                      (item) => `
+                    <div class="order-item">
+                      <div>
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-quantity">x${item.quantity}</span>
+                      </div>
+                      <div class="item-price">$${(
+                        parseFloat(item.price) * item.quantity
+                      ).toFixed(2)}</div>
+                    </div>
+                  `
+                    )
+                    .join("")}
+                </div>
+                
+                ${
+                  order.special_instructions
+                    ? `
+                  <div class="special-instructions">
+                    <strong>Special Instructions:</strong> ${order.special_instructions}
+                  </div>
+                `
+                    : ""
+                }
+                
+                <div class="order-actions">
+                  ${
+                    order.status === "pending"
+                      ? `
+                    <button class="status-btn btn-preparing" onclick="updateOrderStatus(${order.id}, 'preparing')">
+                      Start Preparing
+                    </button>
+                    <button class="status-btn btn-cancel" onclick="updateOrderStatus(${order.id}, 'cancelled')">
+                      Cancel
+                    </button>
+                  `
+                      : ""
+                  }
+                  
+                  ${
+                    order.status === "preparing"
+                      ? `
+                    <button class="status-btn btn-ready" onclick="updateOrderStatus(${order.id}, 'ready')">
+                      Mark Ready
+                    </button>
+                  `
+                      : ""
+                  }
+                  
+                  ${
+                    order.status === "ready"
+                      ? `
+                    <button class="status-btn btn-delivered" onclick="updateOrderStatus(${order.id}, 'delivered')">
+                      Mark Delivered
+                    </button>
+                  `
+                      : ""
+                  }
+                </div>
+              </div>
+            </div>
+          `;
+          })
+          .join("");
+      }
+
+      async function updateOrderStatus(orderId, newStatus) {
+        try {
+          const response = await fetch(`/api/orders/${orderId}/status`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${adminToken}`,
+            },
+            body: JSON.stringify({ status: newStatus }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          showMessage(
+            `Order #${orderId} status updated to ${newStatus}`,
+            "success"
+          );
+          loadOrders(); // Reload orders to show updated status
+        } catch (error) {
+          console.error("Error updating order status:", error);
+          showMessage("Error updating order status: " + error.message, "error");
+        }
+      }
+
+      function filterOrders() {
+        const statusFilter = document.getElementById("status-filter").value;
+
+        if (!statusFilter) {
+          displayOrders(orders);
+        } else {
+          const filteredOrders = orders.filter(
+            (order) => order.status === statusFilter
+          );
+          displayOrders(filteredOrders);
+        }
+      }
     </script>
   </body>
 </html>

@@ -18,11 +18,13 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 const restaurantRoutes = require("./routes/restaurants");
 const menuRoutes = require("./routes/menus");
 const { router: adminAuthRoutes } = require("./routes/adminAuth");
+const ordersRoutes = require("./routes/orders");
 const frontendRoutes = require("./routes/testFrontend");
 
 app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/menus", menuRoutes);
 app.use("/api/admin", adminAuthRoutes);
+app.use(ordersRoutes);
 app.use("/", frontendRoutes);
 
 // Menu display route (this will serve the customer-facing menu)
