@@ -177,8 +177,8 @@
       .menu-item-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 15px;
+        align-items: center;
+        margin-bottom: 8px;
         gap: 15px;
       }
 
@@ -206,6 +206,7 @@
         font-size: 1em;
         line-height: 1.6;
         margin-bottom: 10px;
+        margin-top: 0;
       }
 
       .menu-item-description.truncated {
@@ -317,13 +318,9 @@
         }
 
         .menu-item-header {
-          flex-direction: column;
+          flex-direction: row;
           gap: 10px;
-          align-items: flex-start;
-        }
-
-        .menu-item-price {
-          align-self: flex-end;
+          align-items: center;
         }
       }
 
@@ -522,32 +519,24 @@
               continue;
             }
 
-            const response = await fetch(
-              "https://libretranslate.com/translate",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  q: text,
-                  source: "en",
-                  target: targetLang,
-                  format: "text",
-                }),
-              }
-            );
+            // Use MyMemory API which is more reliable and doesn't require CORS setup
+            const encodedText = encodeURIComponent(text);
+            const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`);
 
             if (response.ok) {
               const result = await response.json();
-              translatedTexts.push(result.translatedText);
+              if (result.responseStatus === 200) {
+                translatedTexts.push(result.responseData.translatedText);
+              } else {
+                translatedTexts.push(text);
+              }
             } else {
               // Fallback: return original text if translation fails
               translatedTexts.push(text);
             }
 
             // Small delay to avoid rate limiting
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 300));
           }
 
           return translatedTexts;
