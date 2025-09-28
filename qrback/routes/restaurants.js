@@ -3,8 +3,8 @@ const router = express.Router();
 const QRCode = require("qrcode");
 const fs = require("fs");
 const path = require("path");
-const bcrypt = require('bcryptjs');
-const { authenticateAdmin } = require('./adminAuth');
+const bcrypt = require("bcryptjs");
+const { authenticateAdmin } = require("./adminAuth");
 
 const pool = require("../setup/db");
 
@@ -14,14 +14,14 @@ router.post("/create", async (req, res) => {
 
   // Validate required fields
   if (!name || !email || !tables_count || !admin_password) {
-    return res.status(400).json({ 
-      error: "Name, email, tables count, and admin password are required" 
+    return res.status(400).json({
+      error: "Name, email, tables count, and admin password are required",
     });
   }
 
   if (admin_password.length < 6) {
-    return res.status(400).json({ 
-      error: "Admin password must be at least 6 characters long" 
+    return res.status(400).json({
+      error: "Admin password must be at least 6 characters long",
     });
   }
 
@@ -37,7 +37,7 @@ router.post("/create", async (req, res) => {
     }
 
     // Start transaction
-    await pool.query('BEGIN');
+    await pool.query("BEGIN");
 
     // Create restaurant
     const result = await pool.query(
@@ -81,7 +81,9 @@ router.post("/create", async (req, res) => {
 
     const tablePromises = [];
     for (let i = 1; i <= tables_count; i++) {
-      const url = `${process.env.APP_DOMAIN || "http://localhost:3000"}/menu/${restaurant.id}/${i}`;
+      const url = `${process.env.APP_DOMAIN || "http://localhost:3000"}/menu/${
+        restaurant.id
+      }/${i}`;
       const qrFileName = `table_${i}.png`;
       const qrFilePath = path.join(restaurantQrDir, qrFileName);
       const qrUrlPath = `/storage/qrs/${restaurant.id}/${qrFileName}`;
@@ -104,19 +106,19 @@ router.post("/create", async (req, res) => {
     await Promise.all(tablePromises);
 
     // Commit transaction
-    await pool.query('COMMIT');
+    await pool.query("COMMIT");
 
-    res.json({ 
-      restaurant, 
-      admin: { 
+    res.json({
+      restaurant,
+      admin: {
         id: adminResult.rows[0].id,
-        email: adminResult.rows[0].email
+        email: adminResult.rows[0].email,
       },
-      message: "Restaurant registered successfully ✅" 
+      message: "Restaurant registered successfully ✅",
     });
   } catch (err) {
     // Rollback transaction
-    await pool.query('ROLLBACK');
+    await pool.query("ROLLBACK");
     console.error(err);
     res.status(500).json({ error: "Something went wrong" });
   }
@@ -138,12 +140,12 @@ router.get("/", async (req, res) => {
 // Get all tables for a restaurant (admin authenticated)
 router.get("/:id/tables", authenticateAdmin, async (req, res) => {
   const { id } = req.params;
-  
+
   // Check if admin is requesting their own restaurant's tables
   if (req.admin.restaurant_id !== id) {
     return res.status(403).json({ error: "Access denied" });
   }
-  
+
   try {
     const result = await pool.query(
       "SELECT table_number, qr_code_url FROM tables WHERE restaurant_id = $1 ORDER BY table_number",
