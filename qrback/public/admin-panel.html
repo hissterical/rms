@@ -488,6 +488,112 @@
       .copy-btn:hover {
         background: #2980b9;
       }
+
+      .image-upload-section {
+        border: 2px dashed #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        transition: border-color 0.3s ease;
+        background: #fafafa;
+        cursor: pointer;
+      }
+
+      .image-upload-section.dragover {
+        border-color: #3498db;
+        background: #f0f8ff;
+      }
+
+      .image-upload-section:hover {
+        border-color: #3498db;
+      }
+
+      .image-preview {
+        margin-top: 15px;
+        text-align: center;
+      }
+
+      .image-preview img {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+      }
+
+      .paste-instructions {
+        color: #666;
+        font-size: 0.9em;
+        margin-top: 10px;
+        line-height: 1.4;
+      }
+
+      .paste-instructions strong {
+        color: #3498db;
+      }
+
+      .remove-image-btn {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+
+      .remove-image-btn:hover {
+        background: #c0392b;
+      }
+
+      .upload-icon {
+        font-size: 2em;
+        color: #3498db;
+        margin-bottom: 10px;
+      }
+
+      .paste-area {
+        background: #f8f9fa;
+        border: 2px dashed #3498db;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        text-align: center;
+        cursor: text;
+        transition: all 0.3s ease;
+        outline: none;
+        user-select: none;
+      }
+
+      .paste-area:hover,
+      .paste-area:focus {
+        background: #e3f2fd;
+        border-color: #2196f3;
+        box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+      }
+
+      .paste-area.focused {
+        background: #e3f2fd;
+        border-color: #2196f3;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+        }
+      }
+
+      .paste-icon {
+        font-size: 1.5em;
+        margin-bottom: 5px;
+      }
       @media (max-width: 768px) {
         .header-content {
           flex-direction: column;
@@ -622,16 +728,38 @@
           </div>
 
           <div class="form-group">
-            <label for="item-image" class="form-label">Image</label>
+            <label for="item-image" class="form-label">Image or GIF</label>
+            <div class="image-upload-section" id="image-upload-area">
+              <div class="upload-icon">📎</div>
+              <p>
+                <strong>Click to select</strong> or
+                <strong>drag & drop</strong> an image/GIF
+              </p>
+
+              <!-- Dedicated Paste Area -->
+              <div class="paste-area" id="paste-area" tabindex="0">
+                <div class="paste-icon">📋</div>
+                <strong>Click here and press Ctrl+V to paste</strong>
+                <br />
+                <small>from clipboard (screenshots, copied images, etc.)</small>
+              </div>
+
+              <p class="paste-instructions">
+                Supports: JPG, PNG, GIF, WEBP (Max: 5MB)
+              </p>
+            </div>
             <input
               type="file"
               id="item-image"
               class="form-input"
               accept="image/*"
+              style="display: none"
             />
-            <small style="color: #666; font-size: 0.85em"
-              >Max file size: 5MB</small
-            >
+            <div
+              id="image-preview"
+              class="image-preview"
+              style="display: none"
+            ></div>
           </div>
 
           <div class="form-group">
@@ -950,10 +1078,15 @@
 
       function openAddModal() {
         editingItemId = null;
+        selectedImageFile = null;
         document.getElementById("modal-title").textContent = "Add Menu Item";
         document.getElementById("item-form").reset();
         document.getElementById("item-available").checked = true;
+        document.getElementById("image-preview").style.display = "none";
         document.getElementById("item-modal").style.display = "block";
+
+        // Initialize image upload functionality
+        setTimeout(initImageUpload, 100);
       }
 
       function editItem(itemId) {
@@ -961,6 +1094,7 @@
         if (!item) return;
 
         editingItemId = itemId;
+        selectedImageFile = null;
         document.getElementById("modal-title").textContent = "Edit Menu Item";
         document.getElementById("item-name").value = item.name;
         document.getElementById("item-description").value =
@@ -969,12 +1103,36 @@
         document.getElementById("item-category").value = item.category || "";
         document.getElementById("item-sort-order").value = item.sort_order || 0;
         document.getElementById("item-available").checked = item.is_available;
+
+        // Show existing image if available
+        const imagePreview = document.getElementById("image-preview");
+        if (item.image_url) {
+          imagePreview.innerHTML = `
+            <img src="${item.image_url}" alt="Current image" />
+            <br>
+            <button type="button" class="remove-image-btn" onclick="removeImagePreview()">
+              Remove Current Image
+            </button>
+            <p style="margin-top: 10px; color: #666; font-size: 0.85em;">
+              Current image (replace by selecting/pasting a new one)
+            </p>
+          `;
+          imagePreview.style.display = "block";
+        } else {
+          imagePreview.style.display = "none";
+        }
+
         document.getElementById("item-modal").style.display = "block";
+
+        // Initialize image upload functionality
+        setTimeout(initImageUpload, 100);
       }
 
       function closeModal() {
         document.getElementById("item-modal").style.display = "none";
         editingItemId = null;
+        selectedImageFile = null;
+        document.getElementById("image-preview").style.display = "none";
       }
 
       async function deleteItem(itemId) {
@@ -1000,6 +1158,149 @@
           console.error("Error deleting item:", error);
           showMessage("Error deleting item", "error");
         }
+      }
+
+      // Image upload functionality
+      let selectedImageFile = null;
+
+      function initImageUpload() {
+        const uploadArea = document.getElementById("image-upload-area");
+        const pasteArea = document.getElementById("paste-area");
+        const fileInput = document.getElementById("item-image");
+        const imagePreview = document.getElementById("image-preview");
+
+        // Click to select file (main upload area)
+        uploadArea.addEventListener("click", (e) => {
+          // Don't trigger file selection if clicking on paste area
+          if (!e.target.closest(".paste-area")) {
+            fileInput.click();
+          }
+        });
+
+        // Paste area focus handling
+        pasteArea.addEventListener("focus", () => {
+          pasteArea.classList.add("focused");
+        });
+
+        pasteArea.addEventListener("blur", () => {
+          pasteArea.classList.remove("focused");
+        });
+
+        pasteArea.addEventListener("click", () => {
+          pasteArea.focus();
+          showMessage(
+            "Paste area focused - now press Ctrl+V to paste an image",
+            "success"
+          );
+        });
+
+        // File input change
+        fileInput.addEventListener("change", handleFileSelect);
+
+        // Drag and drop events
+        uploadArea.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          uploadArea.classList.add("dragover");
+        });
+
+        uploadArea.addEventListener("dragleave", () => {
+          uploadArea.classList.remove("dragover");
+        });
+
+        uploadArea.addEventListener("drop", (e) => {
+          e.preventDefault();
+          uploadArea.classList.remove("dragover");
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            handleFile(files[0]);
+          }
+        });
+
+        // Paste from clipboard
+        document.addEventListener("paste", (e) => {
+          // Only handle paste if modal is open
+          const modal = document.getElementById("item-modal");
+          if (modal.style.display === "block") {
+            const items = e.clipboardData.items;
+            for (let item of items) {
+              if (item.type.startsWith("image/")) {
+                const file = item.getAsFile();
+                if (file) {
+                  handleFile(file);
+                  e.preventDefault();
+                  break;
+                }
+              }
+            }
+          }
+        });
+      }
+
+      function handleFileSelect(e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+          handleFile(files[0]);
+        }
+      }
+
+      function handleFile(file) {
+        // Validate file type
+        const allowedTypes = [
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/gif",
+          "image/webp",
+        ];
+        if (!allowedTypes.includes(file.type)) {
+          showMessage(
+            "Please select a valid image file (JPG, PNG, GIF, WEBP)",
+            "error"
+          );
+          return;
+        }
+
+        // Validate file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          showMessage("File size must be less than 5MB", "error");
+          return;
+        }
+
+        selectedImageFile = file;
+        showImagePreview(file);
+        showMessage(
+          `${file.type.includes("gif") ? "GIF" : "Image"} selected: ${
+            file.name
+          }`
+        );
+      }
+
+      function showImagePreview(file) {
+        const imagePreview = document.getElementById("image-preview");
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          imagePreview.innerHTML = `
+            <img src="${e.target.result}" alt="Preview" />
+            <br>
+            <button type="button" class="remove-image-btn" onclick="removeImagePreview()">
+              Remove ${file.type.includes("gif") ? "GIF" : "Image"}
+            </button>
+            <p style="margin-top: 10px; color: #666; font-size: 0.85em;">
+              ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)
+            </p>
+          `;
+          imagePreview.style.display = "block";
+        };
+
+        reader.readAsDataURL(file);
+      }
+
+      function removeImagePreview() {
+        selectedImageFile = null;
+        document.getElementById("image-preview").style.display = "none";
+        document.getElementById("item-image").value = "";
+        showMessage("Image removed");
       }
 
       // Form submission
@@ -1032,7 +1333,9 @@
             document.getElementById("item-available").checked
           );
 
-          const imageFile = document.getElementById("item-image").files[0];
+          // Use selectedImageFile from drag/drop/paste or file input
+          const imageFile =
+            selectedImageFile || document.getElementById("item-image").files[0];
           if (imageFile) {
             formData.append("image", imageFile);
           }
