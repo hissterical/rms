@@ -1,5 +1,4 @@
 import express from "express";
-
 import {
   getAllRoomTypes,
   getRoomTypeById,
@@ -7,21 +6,50 @@ import {
   deleteRoomType,
   updateRoomType,
 } from "../controllers/roomTypeController.js";
+import {
+  authenticate,
+  authorize,
+  requireRole
+} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-//Internal routes
-// Hotel owners should not use these routes.
-// Use propertyRoutes.js for creating/updating rooms under a property.
+//Internal routes - System-wide room type management
+// Hotel owners should typically use propertyRoutes.js for managing room types under their properties.
+// These routes are for system administrators and super admins.
 
-router.get("/", getAllRoomTypes);
+// Require authentication for all room type routes
+router.use(authenticate);
 
-router.get("/:id", getRoomTypeById);
+// Get all room types - admins and managers only
+router.get("/",
+  requireRole('super_admin', 'property_owner', 'hotel_manager'),
+  getAllRoomTypes
+);
 
-router.post("/", createRoomType);
+router.get("/:id",
+  authorize('rooms', 'read'),
+  getRoomTypeById
+);
 
-router.delete("/:id", deleteRoomType);
+// Create room type - super admin only (prefer property-specific creation)
+router.post("/",
+  requireRole('super_admin'),
+  authorize('rooms', 'create'),
+  createRoomType
+);
 
-router.put("/:id", updateRoomType);
+// Update room type
+router.put("/:id",
+  authorize('rooms', 'update'),
+  updateRoomType
+);
+
+// Delete room type - super admin only
+router.delete("/:id",
+  requireRole('super_admin'),
+  authorize('rooms', 'delete'),
+  deleteRoomType
+);
 
 export default router;

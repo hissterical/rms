@@ -6,21 +6,50 @@ import {
   deleteRoom,
   updateRoom,
 } from "../controllers/roomController.js";
+import {
+  authenticate,
+  authorize,
+  requireRole
+} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-//Internal routes
-// Hotel owners should not use these routes.
-// Use propertyRoutes.js for creating/updating rooms under a property.
+//Internal routes - System-wide room management
+// Hotel owners should typically use propertyRoutes.js for managing rooms under their properties.
+// These routes are for system administrators and super admins.
 
-router.get("/", getAllRooms);
+// Require authentication for all room routes
+router.use(authenticate);
 
-router.get("/:id", getRoomById);
+// Get all rooms - admins and managers only
+router.get("/",
+  requireRole('super_admin', 'property_owner'),
+  getAllRooms
+);
 
-router.post("/", createRoom);
+router.get("/:id",
+  authorize('rooms', 'read'),
+  getRoomById
+);
 
-router.delete("/:id", deleteRoom);
+// Create room - super admin only (prefer property-specific creation)
+router.post("/",
+  requireRole('super_admin'),
+  authorize('rooms', 'create'),
+  createRoom
+);
 
-router.put("/:id", updateRoom);
+// Update room
+router.put("/:id",
+  authorize('rooms', 'update'),
+  updateRoom
+);
+
+// Delete room - super admin only
+router.delete("/:id",
+  requireRole('super_admin'),
+  authorize('rooms', 'delete'),
+  deleteRoom
+);
 
 export default router;
