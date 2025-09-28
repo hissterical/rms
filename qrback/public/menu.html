@@ -521,7 +521,9 @@
 
             // Use MyMemory API which is more reliable and doesn't require CORS setup
             const encodedText = encodeURIComponent(text);
-            const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`);
+            const response = await fetch(
+              `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`
+            );
 
             if (response.ok) {
               const result = await response.json();
