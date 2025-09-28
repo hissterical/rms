@@ -34,19 +34,56 @@
         align-items: center;
       }
 
-      .header-title {
-        font-size: 1.5em;
-        color: #2c3e50;
-        font-weight: 700;
-      }
+        .header-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            font-weight: 700;
+        }
 
-      .header-info {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-      }
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
 
-      .restaurant-name {
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }      .restaurant-name {
         color: #666;
         font-weight: 500;
       }
@@ -371,13 +408,85 @@
         border-color: #2ed573;
       }
 
-      .availability-toggle.unavailable {
-        background: #ff4757;
-        color: white;
-        border-color: #ff4757;
-      }
+        .availability-toggle.unavailable {
+            background: #ff4757;
+            color: white;
+            border-color: #ff4757;
+        }
 
-      @media (max-width: 768px) {
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .table-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .table-number {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .qr-code-image {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .table-url {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            color: #666;
+            word-break: break-all;
+            margin-bottom: 15px;
+        }
+
+        .download-btn {
+            background: #27ae60;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        .download-btn:hover {
+            background: #219a52;
+        }
+
+        .copy-btn {
+            background: #3498db;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .copy-btn:hover {
+            background: #2980b9;
+        }      @media (max-width: 768px) {
         .header-content {
           flex-direction: column;
           gap: 15px;
@@ -418,31 +527,50 @@
     <div class="container">
       <div id="message-container"></div>
 
-      <div class="actions-bar">
-        <button class="add-item-btn" onclick="openAddModal()">
-          + Add Menu Item
-        </button>
-        <input
-          type="text"
-          class="search-input"
-          id="search-input"
-          placeholder="Search menu items..."
-        />
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-button active" onclick="showTab('menu')">Menu Management</button>
+        <button class="tab-button" onclick="showTab('tables')">Tables & QR Codes</button>
       </div>
 
-      <div id="loading" class="loading">
-        <div class="loading-spinner"></div>
-        <p>Loading menu items...</p>
+      <!-- Menu Tab -->
+      <div id="menu-tab" class="tab-content active">
+        <div class="actions-bar">
+          <button class="add-item-btn" onclick="openAddModal()">
+            + Add Menu Item
+          </button>
+          <input
+            type="text"
+            class="search-input"
+            id="search-input"
+            placeholder="Search menu items..."
+          />
+        </div>
+
+        <div id="loading" class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading menu items...</p>
+        </div>
+
+        <div id="menu-items-container" style="display: none"></div>
+
+        <div id="empty-state" class="empty-state" style="display: none">
+          <h3>No Menu Items Yet</h3>
+          <p>Start building your digital menu by adding your first item</p>
+          <button class="add-item-btn" onclick="openAddModal()">
+            + Add Your First Item
+          </button>
+        </div>
       </div>
 
-      <div id="menu-items-container" style="display: none"></div>
+      <!-- Tables Tab -->
+      <div id="tables-tab" class="tab-content">
+        <div id="tables-loading" class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading tables and QR codes...</p>
+        </div>
 
-      <div id="empty-state" class="empty-state" style="display: none">
-        <h3>No Menu Items Yet</h3>
-        <p>Start building your digital menu by adding your first item</p>
-        <button class="add-item-btn" onclick="openAddModal()">
-          + Add Your First Item
-        </button>
+        <div id="tables-container" style="display: none;"></div>
       </div>
     </div>
 
@@ -551,6 +679,147 @@
         setTimeout(() => {
           container.innerHTML = "";
         }, 5000);
+      }
+
+      // Tab switching functionality
+      function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        
+        // Remove active class from all tab buttons
+        document.querySelectorAll('.tab-button').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        
+        // Show selected tab content
+        document.getElementById(tabName + '-tab').classList.add('active');
+        
+        // Add active class to clicked tab button
+        event.target.classList.add('active');
+        
+        // Load data if needed
+        if (tabName === 'tables') {
+          loadTables();
+        }
+      }
+
+      // Load tables and QR codes
+      async function loadTables() {
+        const tablesLoading = document.getElementById('tables-loading');
+        const tablesContainer = document.getElementById('tables-container');
+        
+        tablesLoading.style.display = 'block';
+        tablesContainer.style.display = 'none';
+
+        try {
+          const response = await fetch(`/api/restaurants/${adminInfo.restaurant_id}/tables`, {
+            headers: {
+              'Authorization': `Bearer ${adminToken}`
+            }
+          });
+
+          if (response.status === 401) {
+            logout();
+            return;
+          }
+
+          const tables = await response.json();
+          displayTables(tables);
+          
+          tablesLoading.style.display = 'none';
+          tablesContainer.style.display = 'block';
+        } catch (error) {
+          console.error('Error loading tables:', error);
+          showMessage('Error loading tables', 'error');
+          tablesLoading.style.display = 'none';
+        }
+      }
+
+      // Display tables and QR codes
+      function displayTables(tables) {
+        const container = document.getElementById('tables-container');
+        container.innerHTML = '';
+
+        if (tables.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h3>No Tables Found</h3>
+              <p>There seems to be an issue with your table setup. Please contact support.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const tablesGrid = document.createElement('div');
+        tablesGrid.className = 'tables-grid';
+
+        tables.forEach(table => {
+          const tableCard = document.createElement('div');
+          tableCard.className = 'table-card';
+          
+          const menuUrl = `${window.location.origin}/menu/${adminInfo.restaurant_id}/${table.table_number}`;
+          
+          tableCard.innerHTML = `
+            <div class="table-number">Table ${table.table_number}</div>
+            <img src="${table.qr_code_url}" alt="QR Code for Table ${table.table_number}" class="qr-code-image">
+            <div class="table-url">${menuUrl}</div>
+            <div>
+              <button class="download-btn" onclick="downloadQR('${table.qr_code_url}', ${table.table_number})">
+                Download QR
+              </button>
+              <button class="copy-btn" onclick="copyMenuUrl('${menuUrl}')">
+                Copy URL
+              </button>
+            </div>
+          `;
+          
+          tablesGrid.appendChild(tableCard);
+        });
+
+        container.appendChild(tablesGrid);
+      }
+
+      // Download QR code
+      async function downloadQR(qrUrl, tableNumber) {
+        try {
+          const response = await fetch(qrUrl);
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `table_${tableNumber}_qr.png`;
+          document.body.appendChild(a);
+          a.click();
+          
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          
+          showMessage(`QR code for Table ${tableNumber} downloaded successfully`);
+        } catch (error) {
+          console.error('Error downloading QR code:', error);
+          showMessage('Error downloading QR code', 'error');
+        }
+      }
+
+      // Copy menu URL to clipboard
+      async function copyMenuUrl(url) {
+        try {
+          await navigator.clipboard.writeText(url);
+          showMessage('Menu URL copied to clipboard');
+        } catch (error) {
+          console.error('Error copying URL:', error);
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea');
+          textArea.value = url;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          showMessage('Menu URL copied to clipboard');
+        }
       }
 
       async function loadMenuItems() {
