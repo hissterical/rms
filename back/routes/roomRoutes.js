@@ -13,14 +13,14 @@ const router = express.Router();
 // Hotel owners should not use these routes.
 // Use propertyRoutes.js for creating/updating rooms under a property.
 
-router.get("/", getAllRooms);
+// router.get("/", getAllRooms);
 
-router.get("/:id", getRoomById);
+// router.get("/:id", getRoomById);
 
-router.post("/", createRoom);
+// router.post("/", createRoom);
 
-router.delete("/:id", deleteRoom);
+// router.delete("/:id", deleteRoom);
 
-router.put("/:id", updateRoom);
+// router.put("/:id", updateRoom);
 
-export default router;
+// export default router;
