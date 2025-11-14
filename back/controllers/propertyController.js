@@ -185,7 +185,6 @@ export async function createRoomByPropertyId(req, res) {
     const roomData = {
       property_id: propertyId,
       room_type_id,
-      booking_id: null, // null initially, set when room is booked
       room_number,
       floor,
       status: status || "available", // Default to available

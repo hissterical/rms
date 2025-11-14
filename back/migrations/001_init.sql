@@ -1,5 +1,5 @@
 -- MIGRATION: UP
-
+--- use npm run migrate up
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
