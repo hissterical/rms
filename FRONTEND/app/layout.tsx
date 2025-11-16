@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Fredoka } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { HotelProvider } from '@/contexts/hotel-context'
+import { GuestProvider } from '@/contexts/guest-context'
 import './globals.css'
 
 const fredoka = Fredoka({ 
@@ -23,7 +25,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${fredoka.className} ${fredoka.variable}`}>
-        {children}
+        <HotelProvider>
+          <GuestProvider>
+            {children}
+          </GuestProvider>
+        </HotelProvider>
         <Analytics />
       </body>
     </html>
