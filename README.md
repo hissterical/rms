@@ -1,6 +1,6 @@
 # Hotel Management System (RMS)
 
-![System Architecture](https://i.imgur.com/architecture-diagram.png)
+![System Architecture](./architecture-diagram.png)
 
 > **Note:** Replace the image URL above with your actual architecture diagram
 
@@ -137,3 +137,4 @@ Proprietary
 **Version:** 1.0  
 **Status:** Development (Authentication Pending)  
 **Last Updated:** November 16, 2025
+
