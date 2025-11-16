@@ -9,21 +9,21 @@ import { motion } from "framer-motion"
 const POSTS = [
   {
     id: 1,
-    title: "Increase Direct Bookings in 30 Days",
-    date: "23 Mar",
-    img: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=400&h=300&fit=crop&crop=center",
+    title: "Implementing QR Codes for Guest Services",
+    date: "15 Nov 2025",
+    img: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop&crop=center",
   },
   {
     id: 2,
-    title: "Housekeeping SOPs You Can Copy",
-    date: "23 Mar",
+    title: "Optimizing Room Management Workflows",
+    date: "10 Nov 2025",
     img: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&h=300&fit=crop&crop=center",
   },
   {
     id: 3,
-    title: "ADR vs RevPAR: What Matters When",
-    date: "23 Mar",
-    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop&crop=center",
+    title: "AI-Powered Guest Experience: Best Practices",
+    date: "05 Nov 2025",
+    img: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=300&fit=crop&crop=center",
   },
 ]
 
@@ -73,7 +73,7 @@ export function ArticlesGrid() {
                 initial={{ opacity: 0.8 }}
                 whileHover={{ opacity: 1 }}
               >
-                Practical playbooks and insights for modern hoteliers.
+                Learn how to leverage technology for seamless hotel operations and exceptional guest experiences.
               </motion.p>
             </CardContent>
           </Card>
