@@ -8,17 +8,17 @@ import { motion } from "framer-motion"
 const TESTIMONIALS = [
   {
     id: 1,
-    name: "Bianka P.",
-    location: "Aurelia Boutique Hotel",
+    name: "Sarah M.",
+    location: "Grand Plaza Hotel",
     avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&h=100&q=80",
-    text: "Setup took under an hour. Our team loves the housekeeping app and we’ve cut OTA commissions by 18%.",
+    text: "The QR-based guest services transformed our operations. Check-ins are 60% faster and guests love the multi-language food ordering with voice search.",
   },
   {
     id: 2,
-    name: "Jakub S.",
-    location: "Riverside Suites",
+    name: "Raj K.",
+    location: "Skyline Residency",
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-    text: "Channel sync is rock‑solid and the revenue dashboard surfaced rate opportunities we were missing.",
+    text: "Real-time room status tracking and the AI chatbot for guest requests have reduced our response time by 75%. The 360° room previews increased bookings significantly.",
   },
 ]
 

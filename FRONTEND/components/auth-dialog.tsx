@@ -122,7 +122,7 @@ export function AuthDialog({ children }: AuthDialogProps) {
                 <motion.div variants={itemVariants}>
                   <Button
                     type="submit"
-                    className="w-full btn-fun bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-500"
+                    className="w-full btn-fun bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900"
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -230,7 +230,7 @@ export function AuthDialog({ children }: AuthDialogProps) {
                 <motion.div variants={itemVariants}>
                   <Button
                     type="submit"
-                    className="w-full btn-fun bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-500"
+                    className="w-full btn-fun bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900"
                     disabled={isLoading}
                   >
                     {isLoading ? (

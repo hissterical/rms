@@ -39,11 +39,11 @@ export function SiteFooter() {
         >
           <motion.div variants={itemVariants}>
             <motion.h3 
-              className="font-bold text-lg bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
+              className="font-bold text-lg bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              HotelOS ✨
+              Sohraa ✨
             </motion.h3>
             <p className="mt-3 max-w-sm text-sm text-muted-foreground leading-relaxed">
               Modern hotel management software designed for independent hotels and groups. Streamline operations and boost revenue.
