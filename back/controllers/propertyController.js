@@ -4,6 +4,15 @@ import {
   createPropertyService,
   getPropertyByIdService,
   updatePropertyService,
+  deletePropertyService,
+  createRoomService,
+  getRoomsService,
+  updateRoomService,
+  deleteRoomService,
+  createRoomTypeService,
+  getRoomTypesService,
+  updateRoomTypeService,
+  deleteRoomTypeService,
 } from "../services/propertyService.js";
 
 export async function createProperty(req, res) {
@@ -16,8 +25,8 @@ export async function createProperty(req, res) {
       phone,
       website,
       main_image_url,
-      owner_id,
     } = req.body;
+    const owner_id = req.user?.id;
 
     if (!name) {
       return res.status(400).json({ message: "Property name is required" });
@@ -41,55 +50,64 @@ export async function createProperty(req, res) {
       owner_id,
     };
     const newProperty = await createPropertyService(propertyData);
-    res.status(201).json(newProperty);
+    return res.status(201).json(newProperty);
   } catch (err) {
     console.error("Error creating property: ", err);
-    res.status(500).json({ message: "Failed to create property" });
+    return res.status(500).json({ message: "Failed to create property" });
   }
 }
 
-export async function getAllProperties(req, res) {
-  try {
-    const { location, property_type, owner_id, search } = req.query;
+// export async function getAllProperties(req, res) {
+//   try {
+//     const { location, property_type, owner_id, search } = req.query;
 
-    const filters = {};
-    if (location) filters.location = location;
-    if (property_type) filters.property_type = property_type;
-    if (owner_id) filters.owner_id = owner_id;
-    if (search) filters.search = search;
+//     const filters = {};
+//     if (location) filters.location = location;
+//     if (property_type) filters.property_type = property_type;
+//     if (owner_id) filters.owner_id = owner_id;
+//     if (search) filters.search = search;
 
-    const properties = await getAllPropertiesService(filters);
+//     const properties = await getAllPropertiesService(filters);
 
-    if (!properties || properties.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: "No properties found",
-        data: [],
-      });
-    }
+//     if (!properties || properties.length === 0) {
+//       return res.status(200).json({
+//         success: true,
+//         message: "No properties found",
+//         data: [],
+//       });
+//     }
 
-    return res.status(200).json({
-      success: true,
-      message: "Properties retrieved successfully",
-      data: properties,
-    });
-  } catch (err) {
-    console.error("Error fetching all properties:", err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch properties" });
-  }
-}
+//     return res.status(200).json({
+//       success: true,
+//       message: "Properties retrieved successfully",
+//       data: properties,
+//     });
+//   } catch (err) {
+//     console.error("Error fetching all properties:", err);
+//     return res
+//       .status(500)
+//       .json({ success: false, message: "Failed to fetch properties" });
+//   }
+// }
 
 export async function getPropertyById(req, res) {
   try {
     const { propertyId } = req.params;
+    const ownerId = req.user?.id;
+
     if (!propertyId) {
       return res
         .status(400)
         .json({ success: false, message: "Property ID is required" });
     }
-    const property = await getPropertyByIdService(propertyId);
+    if (!ownerId) {
+      //keep/ discard check based on auth middleware
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized: No owner ID found" });
+    }
+
+    const property = await getPropertyByIdService(propertyId, ownerId);
     if (!property) {
       return res
         .status(404)
@@ -108,38 +126,72 @@ export async function getPropertyById(req, res) {
 
 export async function updateProperty(req, res) {
   const { propertyId } = req.params;
-  if (!propertyId) {
-    return res.status(400).json({ message: "Property ID is required" });
-  }
-  const fields = req.body;
-  if (Object.keys(fields).length === 0) {
-    return res.status(400).json({ message: "No fields provided to update" });
-  }
-  try {
-    const updatedProperty = await updatePropertyService(propertyId, fields);
-    if (!updatedProperty) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Property not found" });
-    }
-    return res.status(200).json(updatedProperty);
-  } catch (err) {
-    console.error("Error updating property:", err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to update property" });
-  }
-}
+  const ownerId = req.user?.id;
 
-export async function deleteProperty(req, res) {
-  const { propertyId } = req.params;
+  if (!ownerId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
   if (!propertyId) {
     return res
       .status(400)
       .json({ success: false, message: "Property ID is required" });
   }
+
+  const fields = req.body;
+
+  if (Object.keys(fields).length === 0) {
+    return res
+      .status(400)
+      .json({ success: false, message: "No fields provided to update" });
+  }
+
   try {
-    const deletedProperty = await deletePropertyService(propertyId);
+    const updatedProperty = await updatePropertyService(
+      propertyId,
+      fields,
+      ownerId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Property updated successfully",
+      data: updatedProperty,
+    });
+  } catch (err) {
+    console.error("Error updating property:", err);
+
+    const message = err.message || "Failed to update property";
+
+    if (message.includes("not found")) {
+      return res.status(404).json({ success: false, message });
+    }
+    if (message.includes("unauthorized")) {
+      return res.status(403).json({ success: false, message });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message,
+    });
+  }
+}
+
+export async function deleteProperty(req, res) {
+  const { propertyId } = req.params;
+  const ownerId = req.user?.id; //verify
+  if (!propertyId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Property ID is required" });
+  }
+  if (!ownerId) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Unauthorized: No owner ID found" });
+  }
+  try {
+    const deletedProperty = await deletePropertyService(propertyId, ownerId);
     if (!deletedProperty) {
       return res
         .status(404)
@@ -159,9 +211,14 @@ export async function deleteProperty(req, res) {
 }
 
 //room specific
-
 export async function createRoomByPropertyId(req, res) {
+  const ownerId = req.user?.id;
   const { propertyId } = req.params;
+
+  if (!ownerId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
   if (!propertyId) {
     return res
       .status(400)
@@ -187,42 +244,48 @@ export async function createRoomByPropertyId(req, res) {
       room_type_id,
       room_number,
       floor,
-      status: status || "available", // Default to available
+      status: status || "available",
+      owner_id: ownerId,
     };
 
     const newRoom = await createRoomService(roomData);
+
     return res.status(201).json({
       success: true,
       message: "Room created successfully",
       data: newRoom,
     });
   } catch (err) {
-    console.error(`Error creating room for propertyId ${propertyId}:`, err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to create room" });
+    const msg = err.message;
+    const status =
+      msg === "Property not found" ? 404 : msg === "Unauthorized" ? 403 : 500;
+
+    return res.status(status).json({ success: false, message: msg });
   }
 }
 
 export async function getRoomsByPropertyId(req, res) {
   const { propertyId } = req.params;
+  const ownerId = req.user?.id;
+
+  if (!ownerId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
   if (!propertyId) {
     return res
       .status(400)
       .json({ success: false, message: "PropertyId is required" });
   }
+
   try {
-    const rooms = await getRoomsService(propertyId);
-    if (!rooms || rooms.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: "No rooms found for this property",
-        data: [],
-      });
-    }
+    const rooms = await getRoomsService(propertyId, ownerId);
+
     return res.status(200).json({
       success: true,
-      message: "Rooms of property retrieved successfully",
+      message: rooms.length
+        ? "Rooms retrieved successfully"
+        : "No rooms found for this property",
       data: rooms,
     });
   } catch (err) {
@@ -234,7 +297,12 @@ export async function getRoomsByPropertyId(req, res) {
 }
 
 export async function updateRoomById(req, res) {
+  const ownerId = req.user?.id;
   const { propertyId, roomId } = req.params;
+
+  if (!ownerId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
   if (!propertyId) {
     return res
       .status(400)
@@ -245,51 +313,70 @@ export async function updateRoomById(req, res) {
       .status(400)
       .json({ success: false, message: "Room ID is required" });
   }
+
   const fields = req.body;
   if (Object.keys(fields).length === 0) {
     return res
       .status(400)
-      .json({ success: false, message: "No fields provided to update" });
+      .json({ success: false, message: "No fields provided" });
   }
+
   try {
-    const updatedRoom = await updateRoomService(roomId, fields);
-    if (!updatedRoom) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Room not found" });
-    }
+    const updatedRoom = await updateRoomService(
+      roomId,
+      propertyId,
+      fields,
+      ownerId
+    );
+
     return res.status(200).json({
       success: true,
       message: "Room updated successfully",
       data: updatedRoom,
     });
   } catch (err) {
-    console.error(`Error updating room ${roomId}:`, err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to update room" });
+    const msg = err.message;
+    const status =
+      msg === "Room not found"
+        ? 404
+        : msg === "Unauthorized"
+          ? 403
+          : msg === "No valid fields to update"
+            ? 400
+            : 500;
+
+    return res.status(status).json({ success: false, message: msg });
   }
 }
 
 export async function deleteRoomById(req, res) {
   const { propertyId, roomId } = req.params;
-  if (!propertyId) {
-    return res
-      .status(400)
-      .json({ success: false, message: "PropertyId is required" });
+  const ownerId = req.user?.id; // logged-in user
+
+  if (!ownerId) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
   }
-  if (!roomId) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Room ID is required" });
+
+  if (!propertyId || !roomId) {
+    return res.status(400).json({
+      success: false,
+      message: "Property ID and Room ID are required",
+    });
   }
+
   try {
-    const deletedRoom = await deleteRoomService(roomId);
+    const deletedRoom = await deleteRoomService(propertyId, roomId, ownerId);
+
     if (!deletedRoom) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Room not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Room not found or you do not have permission to delete it",
+      });
     }
+
     return res.status(200).json({
       success: true,
       message: "Room deleted successfully",
@@ -297,9 +384,10 @@ export async function deleteRoomById(req, res) {
     });
   } catch (err) {
     console.error(`Error deleting room ${roomId}:`, err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to delete room" });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete room",
+    });
   }
 }
 
@@ -314,7 +402,11 @@ export async function createRoomTypeByPropertyId(req, res) {
   }
 
   const { room_type_name, description, capacity, price } = req.body;
+  const owner_id = req.user?.id; // authentication required
 
+  if (!owner_id) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
   if (!room_type_name) {
     return res
       .status(400)
@@ -338,9 +430,11 @@ export async function createRoomTypeByPropertyId(req, res) {
       description,
       capacity,
       price,
+      owner_id,
     };
 
     const newRoomType = await createRoomTypeService(roomTypeData);
+
     return res.status(201).json({
       success: true,
       message: "Room type created successfully",
@@ -351,21 +445,30 @@ export async function createRoomTypeByPropertyId(req, res) {
       `Error creating room type for propertyId ${propertyId}:`,
       err
     );
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to create room type" });
+
+    const status = err.message.includes("Property not found") ? 404 : 500;
+
+    return res.status(status).json({ success: false, message: err.message });
   }
 }
 
 export async function getRoomTypesByPropertyId(req, res) {
   const { propertyId } = req.params;
+  const ownerId = req.user?.id;
   if (!propertyId) {
     return res
       .status(400)
       .json({ success: false, message: "PropertyId is required" });
   }
+  if (!ownerId) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
   try {
-    const roomTypes = await getRoomTypesService(propertyId);
+    const roomTypes = await getRoomTypesService(propertyId, ownerId);
     if (!roomTypes || roomTypes.length === 0) {
       return res.status(200).json({
         success: true,
@@ -390,62 +493,88 @@ export async function getRoomTypesByPropertyId(req, res) {
 }
 
 export async function updateRoomTypeById(req, res) {
-  const { propertyId, roomTypeId } = req.params;
-  if (!propertyId) {
-    return res
-      .status(400)
-      .json({ success: false, message: "PropertyId is required" });
+  const { roomTypeId } = req.params;
+  const ownerId = req.user?.id;
+
+  if (!ownerId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
   }
+
   if (!roomTypeId) {
     return res
       .status(400)
       .json({ success: false, message: "Room Type ID is required" });
   }
+
   const fields = req.body;
   if (Object.keys(fields).length === 0) {
     return res
       .status(400)
       .json({ success: false, message: "No fields provided to update" });
   }
+
   try {
-    const updatedRoomType = await updateRoomTypeService(roomTypeId, fields);
-    if (!updatedRoomType) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Room type not found" });
-    }
+    await updateRoomTypeService(roomTypeId, fields, ownerId);
+
     return res.status(200).json({
       success: true,
       message: "Room type updated successfully",
-      data: updatedRoomType,
     });
   } catch (err) {
-    console.error(`Error updating room type ${roomTypeId}:`, err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to update room type" });
+    const msg = err.message;
+    const status =
+      msg === "Room type not found"
+        ? 404
+        : msg === "Unauthorized"
+          ? 403
+          : msg === "No fields to update"
+            ? 400
+            : 500;
+
+    return res.status(status).json({ success: false, message: msg });
   }
 }
 
 export async function deleteRoomTypeById(req, res) {
   const { propertyId, roomTypeId } = req.params;
+  const ownerId = req.user?.id;
+
+  if (!ownerId) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
   if (!propertyId) {
-    return res
-      .status(400)
-      .json({ success: false, message: "PropertyId is required" });
+    return res.status(400).json({
+      success: false,
+      message: "PropertyId is required",
+    });
   }
+
   if (!roomTypeId) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Room Type ID is required" });
+    return res.status(400).json({
+      success: false,
+      message: "Room Type ID is required",
+    });
   }
+
   try {
-    const deletedRoomType = await deleteRoomTypeService(roomTypeId);
+    const deletedRoomType = await deleteRoomTypeService(
+      propertyId,
+      roomTypeId,
+      ownerId
+    );
+
     if (!deletedRoomType) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Room type not found" });
+      return res.status(404).json({
+        success: false,
+        message:
+          "Room type not found or you do not have permission to delete it",
+      });
     }
+
     return res.status(200).json({
       success: true,
       message: "Room type deleted successfully",
@@ -453,8 +582,9 @@ export async function deleteRoomTypeById(req, res) {
     });
   } catch (err) {
     console.error(`Error deleting room type ${roomTypeId}:`, err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to delete room type" });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete room type",
+    });
   }
 }
