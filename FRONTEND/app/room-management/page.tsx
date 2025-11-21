@@ -105,40 +105,15 @@ export default function RoomManagementPage() {
       setFilteredRooms(data)
     } catch (error) {
       console.error("Error fetching rooms:", error)
-      // For demo purposes, use mock data if API fails
-      const mockRooms: Room[] = generateMockRooms()
-      setRooms(mockRooms)
-      setFilteredRooms(mockRooms)
+      // Show empty state when backend is not connected
+      setRooms([])
+      setFilteredRooms([])
     } finally {
       setLoading(false)
     }
   }
 
-  const generateMockRooms = (): Room[] => {
-    const statuses: Array<'available' | 'occupied' | 'maintenance' | 'reserved'> = ['available', 'occupied', 'maintenance', 'reserved']
-    const rooms: Room[] = []
-    
-    for (let floor = 1; floor <= 5; floor++) {
-      for (let room = 1; room <= 10; room++) {
-        const roomNumber = `${floor}${room.toString().padStart(2, '0')}`
-        const status = statuses[Math.floor(Math.random() * statuses.length)]
-        
-        rooms.push({
-          id: `room-${roomNumber}`,
-          room_number: roomNumber,
-          floor,
-          status,
-          room_type_name: 'Standard Room',
-          capacity: 2,
-          price: 150,
-          guest_first_name: status === 'occupied' ? 'John' : undefined,
-          guest_last_name: status === 'occupied' ? 'Doe' : undefined,
-        })
-      }
-    }
-    
-    return rooms
-  }
+
 
   const handleCreateRoom = async () => {
     try {
@@ -504,17 +479,20 @@ export default function RoomManagementPage() {
         {filteredRooms.length === 0 && (
           <Card className="p-12 text-center bg-white">
             <Hotel className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">No rooms found</h3>
+            <h3 className="text-xl font-semibold text-slate-900 mb-2">
+              {rooms.length === 0 && !loading ? "Backend Not Connected" : "No rooms found"}
+            </h3>
             <p className="text-slate-600 mb-4">
-              {searchQuery || statusFilter !== "all" || floorFilter !== "all"
+              {rooms.length === 0 && !loading
+                ? "Please start the backend server on port 5000 to load room data from the database."
+                : searchQuery || statusFilter !== "all" || floorFilter !== "all"
                 ? "Try adjusting your filters"
                 : "Get started by adding your first room"}
             </p>
-            {rooms.length === 0 && (
-              <Button onClick={() => setShowCreateModal(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Room
-              </Button>
+            {rooms.length === 0 && !loading && (
+              <div className="text-sm text-slate-500 mt-4">
+                <p>Run: <code className="bg-slate-100 px-2 py-1 rounded">cd back && npm start</code></p>
+              </div>
             )}
           </Card>
         )}

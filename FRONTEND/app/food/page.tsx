@@ -258,46 +258,13 @@ export default function FoodOrderingPage() {
         console.error('Error fetching menu:', error)
         setMenuError(error instanceof Error ? error.message : 'Failed to load menu')
         toast({
-          title: "Failed to load menu",
-          description: "Could not connect to the restaurant system. Using demo menu.",
+          title: "Backend Not Connected",
+          description: "Could not connect to the restaurant system on port 3001. Please start the backend.",
           variant: "destructive"
         })
         
-        // Fallback to demo data
-        setMenuItems([
-          {
-            id: 'demo-1',
-            name: 'Sample Dish',
-            nameTranslations: {
-              en: 'Sample Dish',
-              es: 'Plato de muestra',
-              fr: 'Plat d\'échantillon',
-              de: 'Beispielgericht',
-              it: 'Piatto campione',
-              zh: '示例菜',
-              ja: 'サンプル料理',
-              ar: 'طبق عينة'
-            },
-            description: 'A delicious sample dish',
-            descriptionTranslations: {
-              en: 'A delicious sample dish',
-              es: 'Un delicioso plato de muestra',
-              fr: 'Un délicieux plat d\'échantillon',
-              de: 'Ein köstliches Beispielgericht',
-              it: 'Un delizioso piatto campione',
-              zh: '美味的示例菜',
-              ja: '美味しいサンプル料理',
-              ar: 'طبق عينة لذيذ'
-            },
-            price: 15.99,
-            category: 'mains',
-            image: '/placeholder.jpg',
-            dietary: [],
-            rating: 4.5,
-            prepTime: 15,
-            calories: 400
-          }
-        ])
+        // Show empty state - no fallback data
+        setMenuItems([])
       } finally {
         setIsLoadingMenu(false)
       }
@@ -893,8 +860,19 @@ export default function FoodOrderingPage() {
           {filteredItems.length === 0 && !isLoadingMenu && (
             <div className="col-span-full text-center py-12">
               <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No items found</h3>
-              <p className="text-gray-600">Try adjusting your search or filters</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {menuItems.length === 0 ? "Backend Not Connected" : "No items found"}
+              </h3>
+              <p className="text-gray-600">
+                {menuItems.length === 0 
+                  ? "Please start the restaurant backend server on port 3001 to load menu data."
+                  : "Try adjusting your search or filters"}
+              </p>
+              {menuItems.length === 0 && (
+                <div className="text-sm text-gray-500 mt-4">
+                  <p>Run: <code className="bg-gray-100 px-2 py-1 rounded">cd qrback && npm start</code></p>
+                </div>
+              )}
             </div>
           )}
           </div>

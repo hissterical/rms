@@ -109,26 +109,7 @@ export default function DashboardPage() {
   // Calculate dynamic hotel stats
   const dynamicHotelData = useMemo(() => {
     if (!hotelData) {
-      return {
-        name: "Demo Hotel",
-        location: "Sample Location",
-        phone: "+1 234 567 8900",
-        email: "info@demohotel.com",
-        rating: 4.5,
-        totalRooms: 12,
-        occupiedRooms: 8,
-        occupancyRate: 66.7,
-        todayRevenue: 2400,
-        avgDailyRate: 150,
-        checkins: 3,
-        checkouts: 2,
-        amenities: [
-          { icon: Wifi, name: "Free WiFi" },
-          { icon: Car, name: "Parking" },
-          { icon: Coffee, name: "Breakfast" },
-          { icon: Utensils, name: "Restaurant" }
-        ]
-      }
+      return null // No demo data - show connection warning
     }
 
     const totalRooms = hotelData.totalRooms
@@ -185,12 +166,21 @@ export default function DashboardPage() {
   }
 
   // Show welcome message if no hotel data exists
-  if (!hotelData) {
+  if (!hotelData || !dynamicHotelData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Hotel Dashboard</h1>
-          <p className="text-gray-600 mb-6">Please create your hotel profile to get started.</p>
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-6 mb-6">
+            <AlertTriangle className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Backend Not Connected</h1>
+            <p className="text-gray-600 mb-4">
+              No hotel data available. Please start the backend server on port 5000 to load data from the database.
+            </p>
+            <div className="text-sm text-gray-500 bg-white rounded p-3 mb-4">
+              <p className="font-mono">cd back && npm start</p>
+            </div>
+          </div>
+          <p className="text-gray-600 mb-4">Or create a new hotel profile:</p>
           <Link href="/signup">
             <Button className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white">
               Create Hotel Profile
