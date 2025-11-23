@@ -1,3 +1,4 @@
+-- MIGRATION: UP
 -- Add admin authentication table
 CREATE TABLE restaurant_admins (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
