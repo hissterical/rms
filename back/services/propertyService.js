@@ -107,8 +107,6 @@ export async function updatePropertyService(propertyId, fields, ownerId) {
   }
 }
 
-// export async function getAllPropertiesService(filters) {}
-
 export async function deletePropertyService(propertyId, ownerId) {
   //need owner id
   const query = `DELETE FROM properties WHERE id=$1 AND owner_id = $2 RETURNING *;`;

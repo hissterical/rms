@@ -1,7 +1,6 @@
 import express from "express";
 import {
   createProperty,
-  getAllProperties,
   getPropertyById,
   updateProperty,
   deleteProperty,
@@ -18,7 +17,6 @@ import {
 const router = express.Router();
 
 router.post("/", createProperty);
-router.get("/", getAllProperties);
 router.get("/:propertyId", getPropertyById);
 router.patch("/:propertyId", updateProperty);
 router.delete("/:propertyId", deleteProperty);
