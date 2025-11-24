@@ -20,7 +20,7 @@ const router = express.Router();
 router.post("/", createProperty);
 router.get("/", getAllProperties);
 router.get("/:propertyId", getPropertyById);
-router.put("/:propertyId", updateProperty);
+router.patch("/:propertyId", updateProperty);
 router.delete("/:propertyId", deleteProperty);
 
 // rooms under property
@@ -35,7 +35,19 @@ router.post("/:propertyId/roomtypes", createRoomTypeByPropertyId);
 router.put("/:propertyId/roomtypes/:roomTypeId", updateRoomTypeById);
 router.delete("/:propertyId/roomtypes/:roomTypeId", deleteRoomTypeById);
 
-//reviews for a property
-// router.get("/:propertyId/reviews", getPropertyReviews);
+// //reviews for a property
+// // router.get("/:propertyId/re views", getPropertyReviews);
+
+// // Property-wide availability summary (for all room types)
+// router.get("/:propertyId/availability", getPropertyAvailability);
+
+// // Optional: simplified manager calendar (aggregated per day)
+// router.get("/:propertyId/calendar", getPropertyCalendar);
+
+// // Availability by type
+// router.get(
+//   "/:propertyId/roomtypes/:roomTypeId/availability",
+//   getRoomTypeAvailability
+// );
 
 export default router;
