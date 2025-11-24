@@ -588,3 +588,73 @@ export async function deleteRoomTypeById(req, res) {
     });
   }
 }
+
+// Get all properties
+export async function getAllProperties(req, res) {
+  try {
+    const { getAllPropertiesService } = await import("../services/propertyService.js");
+    const properties = await getAllPropertiesService();
+    res.status(200).json(properties);
+  } catch (err) {
+    console.error("Error getting all properties (controller):", err);
+    res.status(500).json({ message: "Failed to fetch properties" });
+  }
+}
+
+// Get property by ID
+export async function getPropertyById(req, res) {
+  try {
+    const { id } = req.params;
+    const { getPropertyByIdService } = await import("../services/propertyService.js");
+    const property = await getPropertyByIdService(id);
+    
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+    
+    res.status(200).json(property);
+  } catch (err) {
+    console.error("Error getting property by ID (controller):", err);
+    res.status(500).json({ message: "Failed to fetch property" });
+  }
+}
+
+export async function updateProperty(req, res) {
+  res.status(501).json({ message: "Not implemented yet" });
+}
+
+export async function deleteProperty(req, res) {
+  res.status(501).json({ message: "Not implemented yet" });
+}
+
+export async function getRoomsByPropertyId(req, res) {
+  res.status(501).json({ message: "Not implemented yet" });
+}
+
+export async function createRoomByPropertyId(req, res) {
+  res.status(501).json({ message: "Not implemented yet" });
+}
+
+export async function updateRoomById(req, res) {
+  res.status(501).json({ message: "Not implemented yet" });
+}
+
+export async function deleteRoomById(req, res) {
+  res.status(501).json({ message: "Not implemented yet" });
+}
+
+export async function getRoomTypesByPropertyId(req, res) {
+  res.status(501).json({ message: "Not implemented yet" });
+}
+
+export async function createRoomTypeByPropertyId(req, res) {
+  res.status(501).json({ message: "Not implemented yet" });
+}
+
+export async function updateRoomTypeById(req, res) {
+  res.status(501).json({ message: "Not implemented yet" });
+}
+
+export async function deleteRoomTypeById(req, res) {
+  res.status(501).json({ message: "Not implemented yet" });
+}
