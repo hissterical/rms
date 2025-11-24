@@ -57,39 +57,6 @@ export async function createProperty(req, res) {
   }
 }
 
-// export async function getAllProperties(req, res) {
-//   try {
-//     const { location, property_type, owner_id, search } = req.query;
-
-//     const filters = {};
-//     if (location) filters.location = location;
-//     if (property_type) filters.property_type = property_type;
-//     if (owner_id) filters.owner_id = owner_id;
-//     if (search) filters.search = search;
-
-//     const properties = await getAllPropertiesService(filters);
-
-//     if (!properties || properties.length === 0) {
-//       return res.status(200).json({
-//         success: true,
-//         message: "No properties found",
-//         data: [],
-//       });
-//     }
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Properties retrieved successfully",
-//       data: properties,
-//     });
-//   } catch (err) {
-//     console.error("Error fetching all properties:", err);
-//     return res
-//       .status(500)
-//       .json({ success: false, message: "Failed to fetch properties" });
-//   }
-// }
-
 export async function getPropertyById(req, res) {
   try {
     const { propertyId } = req.params;
