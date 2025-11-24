@@ -1,3 +1,4 @@
+-- MIGRATION: UP
 -- Create orders table for restaurant order management
 CREATE TABLE IF NOT EXISTS orders (
   id SERIAL PRIMARY KEY,
