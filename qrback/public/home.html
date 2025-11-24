@@ -4,154 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QR Menu SaaS - Digital Restaurant Menus</title>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Oxygen, Ubuntu, Cantarell, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-      }
-
-      .main-container {
-        background: white;
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        max-width: 600px;
-        text-align: center;
-      }
-
-      .logo {
-        font-size: 3em;
-        margin-bottom: 10px;
-      }
-
-      .main-title {
-        font-size: 2.5em;
-        color: #2c3e50;
-        margin-bottom: 15px;
-        font-weight: 700;
-      }
-
-      .subtitle {
-        font-size: 1.2em;
-        color: #666;
-        margin-bottom: 40px;
-        line-height: 1.6;
-      }
-
-      .features {
-        text-align: left;
-        margin-bottom: 40px;
-        background: #f8f9fa;
-        padding: 25px;
-        border-radius: 12px;
-      }
-
-      .features h3 {
-        color: #2c3e50;
-        margin-bottom: 15px;
-        text-align: center;
-      }
-
-      .features ul {
-        list-style: none;
-        padding: 0;
-      }
-
-      .features li {
-        margin-bottom: 10px;
-        padding-left: 25px;
-        position: relative;
-        color: #555;
-      }
-
-      .features li::before {
-        content: "✓";
-        position: absolute;
-        left: 0;
-        color: #27ae60;
-        font-weight: bold;
-      }
-
-      .actions {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-
-      .btn {
-        padding: 15px 30px;
-        border: none;
-        border-radius: 12px;
-        font-size: 1.1em;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-block;
-      }
-
-      .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-      }
-
-      .btn-secondary {
-        background: #27ae60;
-        color: white;
-      }
-
-      .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      }
-
-      .demo-section {
-        margin-top: 40px;
-        padding-top: 30px;
-        border-top: 1px solid #e0e0e0;
-      }
-
-      .demo-section h3 {
-        color: #2c3e50;
-        margin-bottom: 15px;
-      }
-
-      .demo-section p {
-        color: #666;
-        margin-bottom: 20px;
-      }
-
-      @media (max-width: 600px) {
-        .main-container {
-          padding: 30px 20px;
-        }
-
-        .main-title {
-          font-size: 2em;
-        }
-
-        .actions {
-          flex-direction: column;
-        }
-
-        .btn {
-          width: 100%;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="/public/css/home.css">
   </head>
   <body>
     <div class="main-container">
@@ -175,10 +28,8 @@
       </div>
 
       <div class="actions">
-        <a href="/register" class="btn btn-primary"
-          >Register Your Restaurant</a
-        >
-        <a href="/admin-login" class="btn btn-secondary">Admin Login</a>
+        <a href="/register" class="btn btn-primary">Register Your Restaurant</a>
+        <a href="/admin-login.html" class="btn btn-secondary">Admin Login</a>
       </div>
 
       <div class="demo-section">
