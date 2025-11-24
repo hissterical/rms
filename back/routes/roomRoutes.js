@@ -5,9 +5,6 @@ import {
   createRoom,
   deleteRoom,
   updateRoom,
-  updateRoomStatus,
-  getAvailableRooms,
-  bulkCreateRooms,
 } from "../controllers/roomController.js";
 
 const router = express.Router();
