@@ -1,0 +1,239 @@
+================================================================================
+                 HOTEL MANAGEMENT SYSTEM (RMS) - CAPABILITIES
+================================================================================
+
+TECH STACK:
+- Frontend: Next.js 14, TypeScript, Tailwind CSS, Shadcn/ui
+- Backend: Express.js, PostgreSQL (Port 5000 + 3001)
+- AI: Groq API (Llama 3.3 70B Versatile)
+- Voice: Web Speech API, SpeechSynthesis
+- Auth: JWT (Planned)
+
+================================================================================
+USER ROLES
+================================================================================
+
+1. ADMIN/MANAGER (Login Required)
+   - Full system access, analytics, staff management
+   - Configure AI bot knowledge base
+   - Manage properties, rooms, pricing
+
+2. HOTEL STAFF (Login Required)
+   - Check-in/out guests, QR generation
+   - Room status updates
+   - Service request handling
+
+3. RESTAURANT STAFF (Login Required)
+   - Menu management (CRUD)
+   - Order processing
+   - Item availability updates
+
+4. GUEST (QR-Based Public Access)
+   - Room services, food ordering
+   - AI chatbot & voice assistant
+   - No login required
+
+================================================================================
+ADMIN FEATURES
+================================================================================
+
+ROOM MANAGEMENT
+- CRUD operations for properties, rooms, room types
+- 4 statuses: Available, Occupied, Cleaning, Maintenance
+- Floor visualization (up to 10 floors), color-coded grid
+- Real-time status updates
+
+CHECK-IN PROCESS
+1. Scan guest booking QR → Auto-populate form
+2. Collect guest details + upload ID documents
+3. Assign room → Generate room QR code
+4. Guest uses room QR for service access
+
+DASHBOARD
+- Occupancy rate, revenue, check-ins/outs
+- Room status grid, analytics graphs
+- Quick actions: Check-in, Room Management, Food Management, Bot Config
+
+FOOD MANAGEMENT
+- Menu CRUD (8 languages: EN, ES, FR, DE, IT, CN, JP, AR)
+- Categories: Appetizers, Mains, Desserts, Beverages, Specials
+- Item details: Price, dietary info, calories, allergens, prep time
+- Toggle availability, generate menu QR codes
+
+BOT CONFIGURATION (/dashboard/bot-config)
+- Upload .txt files or manual entry for hotel knowledge base
+- Configure: Hotel info, policies, WiFi, amenities, FAQs
+- Applies to both text chatbot and voice assistant
+- Strict mode: Bots only use configured data, no hallucinations
+
+SERVICE REQUESTS
+- View all guest requests (Housekeeping, Maintenance, Concierge, Essentials)
+- Filter by status: Pending, In-Progress, Completed
+- Assign to staff, add notes, track history
+
+================================================================================
+GUEST FEATURES (QR-Based Public Access)
+================================================================================
+
+ROOM SERVICES (/room-services?room={num})
+- Service categories: Housekeeping, Maintenance, Essentials, Concierge
+- Examples: Room cleaning, AC repair, extra pillows, restaurant booking
+- One-click emergency button (24/7 hotline)
+- Submit requests → Track status (Pending/In-Progress/Completed)
+- Access to Restaurant Menu button
+- AI Voice Assistant (speak requests, get voice replies)
+- AI Text Chatbot (floating button, hotel-specific Q&A)
+
+FOOD ORDERING (/food?restaurant={id}&table={num})
+- 8-language menu (EN, ES, FR, DE, IT, CN, JP, AR)
+- Browse by categories: Appetizers, Mains, Desserts, Beverages, Specials
+- Filter by dietary preferences (Veg, Vegan, Gluten-Free, Spicy)
+- Voice search: "Show me vegetarian pasta"
+- Cart management with special instructions
+- Group ordering + Bill splitting (Equal/Individual/Custom)
+- Order submission → Track status
+- AI Chatbot for menu inquiries
+
+================================================================================
+AI FEATURES (Groq API - Llama 3.3 70B)
+================================================================================
+
+TEXT CHATBOT (Room Services + Food Pages)
+- Floating button, expandable chat window
+- Hotel-specific knowledge base (configured via /dashboard/bot-config)
+- Strict mode: Only uses configured data, says "I don't know" otherwise
+- Quick actions: "I'm hungry", "Need towels", "WiFi password?", "Check-out time?"
+- Context-aware (includes room number, hotel name)
+- Fallback keyword system on API failure
+
+VOICE ASSISTANT (Room Services Only)
+- Tech: Web Speech API (recognition) + SpeechSynthesis (TTS)
+- Modal interface with animated mic
+- Workflow: Speak → Speech-to-text → AI processing → Text-to-speech reply
+- Concise responses (max 150 tokens, temp 0.7)
+- Browser support: Chrome, Edge (limited Safari, no Firefox)
+- Privacy: No recordings stored, on-device processing
+
+VOICE SEARCH (Food Page)
+- Natural queries: "Show me vegan options", "Under 500 calories"
+- AI extracts keywords → Filters menu
+- 8-language support (matches menu language)
+
+================================================================================
+TECHNICAL FEATURES
+================================================================================
+
+QR CODE SYSTEM
+1. Room QR: /room-services?room=301&booking=abc123&hotel=xyz
+   - Generated during check-in, placed on key cards
+2. Menu QR: /food?restaurant=abc123&table=5
+   - Generated by staff, placed on table tents
+- Features: High-res, downloadable PNG/SVG, error correction 30%
+
+RESPONSIVE DESIGN
+- Breakpoints: Mobile (<768px), Tablet (768-1024px), Desktop (>1024px)
+- Mobile-first, touch-friendly, PWA-ready
+- Cross-browser: Chrome, Firefox, Safari, Edge
+
+UI/UX
+- Animations: Framer Motion (page transitions, modals, hover effects)
+- Colors: Slate (primary), Teal (accent), Red (emergency only)
+- Icons: Lucide React
+- Feedback: Loading states, success/error toasts, skeleton loaders
+
+DATA STORAGE
+- Backend (PostgreSQL): Properties, rooms, bookings, requests, menu, orders
+- Frontend (localStorage): Bot config, guest context, cart, language preference
+- Context providers: Guest, Hotel
+- APIs: Express.js (5000), QR backend (3001)
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+FRONTEND (Next.js 14, TypeScript, Tailwind)
+/app - Pages: dashboard, room-management, scanner, check-in, room-services (PUBLIC), food (PUBLIC)
+/components - chatbot.tsx, voice-assistant.tsx, qr-scanner.tsx, ui/ (Shadcn)
+/contexts - guest-context.tsx, hotel-context.tsx
+/lib - api.ts, bot-config.ts, qr-utils.ts, voice-search-utils.ts
+
+BACKEND
+Main (Port 5000): Express.js + PostgreSQL
+  - APIs: Properties, Rooms, Bookings, Service Requests
+QR (Port 3001): Express.js + PostgreSQL
+  - APIs: Menu CRUD, Order Processing
+
+DATABASE (PostgreSQL)
+- Tables: properties, rooms, room_types, bookings, guests, service_requests, 
+  restaurants, menu_items, orders, order_items
+
+EXTERNAL
+- AI: Groq API (Llama 3.3 70B), requires NEXT_PUBLIC_GROQ_API_KEY
+- Browser APIs: Web Speech, MediaDevices (camera), Geolocation
+- Libraries: Framer Motion, Lucide React, QRCode.react
+
+================================================================================
+WORKFLOWS
+================================================================================
+
+GUEST JOURNEY
+1. PRE-ARRIVAL: Book room → Receive booking QR
+2. CHECK-IN: Staff scans booking QR → Upload ID → Assign room → Generate room QR
+3. IN-ROOM: Scan room QR → Access /room-services → Request services
+4. DINING: Click "Restaurant Menu" or scan table QR → Order food
+5. AI HELP: Use chatbot/voice assistant (WiFi, check-out time, amenities)
+6. CHECK-OUT: Staff changes room to "Cleaning" → Process payment
+
+STAFF WORKFLOWS
+- Front Desk: QR scanner check-in, assign rooms, handle requests, generate QR codes
+- Housekeeping: View requests, clean rooms, mark "Available"
+- Maintenance: View requests, prioritize, repair, update status
+- Restaurant: Update menu, toggle availability, process orders
+- Manager: View analytics, configure AI bot, manage inventory/staff
+
+================================================================================
+SECURITY & FUTURE
+================================================================================
+
+CURRENT SECURITY:
+✓ HTTPS, environment variables, CORS, input validation
+
+PLANNED (TO BE IMPLEMENTED):
+□ JWT auth with role-based access (Super Admin, Manager, Staff roles)
+□ Protected routes: /dashboard/*, /room-management, /scanner, /check-in
+□ Public routes: /, /room-services, /food
+□ Data encryption, GDPR compliance, API rate limiting
+□ QR expiration, one-time booking QRs
+
+FUTURE ENHANCEMENTS:
+□ Payment gateway, email/SMS notifications, mobile app
+□ Multi-property management, guest loyalty program
+□ Booking platform integration (Booking.com, Airbnb)
+□ AI: Sentiment analysis, predictive maintenance, demand forecasting
+□ Smart lock, IoT device control
+
+================================================================================
+SETUP
+================================================================================
+
+REQUIREMENTS:
+- Dev: Node.js 18+, PostgreSQL 14+, npm/pnpm
+- Production: Linux/Windows server, 2GB+ RAM, domain with SSL, Groq API key
+- Client: Modern browser (Chrome/Edge), camera, microphone
+
+ENVIRONMENT VARIABLES:
+- NEXT_PUBLIC_API_URL
+- NEXT_PUBLIC_RESTAURANT_API_URL
+- NEXT_PUBLIC_GROQ_API_KEY
+- DATABASE_URL
+
+QUICK START:
+1. npm install
+2. Configure .env variables
+3. Run migrations (npm run migrate)
+4. Start backends: Port 5000, Port 3001
+5. Start frontend: npm run dev (localhost:3000)
+
+================================================================================
+Version 1.0 | November 16, 2025 | Status: Development (Auth Pending)
+================================================================================
