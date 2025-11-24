@@ -1,5 +1,5 @@
 import express from "express";
-import propertyRoutes from "./routes/propertyRoutes";
+import propertyRoutes from "./routes/propertyRoutes.js";
 import dotenv from "dotenv";
 dotenv.config();
 
