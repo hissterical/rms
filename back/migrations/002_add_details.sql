@@ -1,7 +1,7 @@
 -- MIGRATION: UP
 
 CREATE TYPE property_type_enum AS ENUM('Hotel', 'Resort', 'Guesthouse', 'Hostel', 'Apartment');
-CREATE TYPE user_role_enum AS ENUM('property_owner', 'admin', 'website_customer', 'offline_customer');
+CREATE TYPE user_role_enum AS ENUM('property_owner', 'manager', 'website_customer', 'offline_customer');
 
 
 

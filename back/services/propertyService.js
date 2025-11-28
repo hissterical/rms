@@ -37,6 +37,24 @@ export async function createPropertyService(data) {
   ];
 
   try {
+    console.log("Creating property with data:", {
+      name,
+      address,
+      description,
+      property_type,
+      phone,
+      website,
+      main_image_url,
+      owner_id,
+    });
+    console.log("Field lengths:", {
+      name: name?.length,
+      address: address?.length,
+      description: description?.length,
+      phone: phone?.length,
+      website: website?.length,
+      main_image_url: main_image_url?.length,
+    });
     const result = await pool.query(query, values);
     return result.rows[0];
   } catch (err) {

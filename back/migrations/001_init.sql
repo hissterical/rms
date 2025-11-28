@@ -10,7 +10,7 @@ CREATE TYPE booking_status AS ENUM('reserved', 'cancelled', 'checked_in', 'check
 CREATE TABLE properties (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   name text NOT NULL,
-  address varchar(255),
+  address varchar(),
   created_at timestamptz DEFAULT now()
 );
 

@@ -1,11 +1,21 @@
 // API configuration and helper functions
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+// Helper to get auth headers
+function getAuthHeaders(): HeadersInit {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
 
 interface Room {
   id: string;
   room_number: string;
   floor: number;
-  status: 'available' | 'reserved' | 'occupied' | 'maintenance';
+  status: "available" | "reserved" | "occupied" | "maintenance";
   booking_id?: string;
   room_type_name?: string;
   capacity?: number;
@@ -25,14 +35,14 @@ interface CreateRoomData {
   room_type_id?: string;
   room_number: string;
   floor?: number;
-  status?: 'available' | 'reserved' | 'occupied' | 'maintenance';
+  status?: "available" | "reserved" | "occupied" | "maintenance";
 }
 
 interface UpdateRoomData {
   room_type_id?: string;
   room_number?: string;
   floor?: number;
-  status?: 'available' | 'reserved' | 'occupied' | 'maintenance';
+  status?: "available" | "reserved" | "occupied" | "maintenance";
   booking_id?: string;
 }
 
@@ -40,9 +50,11 @@ interface UpdateRoomData {
 export const roomAPI = {
   // Get all rooms for a property
   getAllRooms: async (propertyId: string): Promise<Room[]> => {
-    const response = await fetch(`${API_BASE_URL}/rooms?property_id=${propertyId}`);
+    const response = await fetch(
+      `${API_BASE_URL}/rooms?property_id=${propertyId}`
+    );
     if (!response.ok) {
-      throw new Error('Failed to fetch rooms');
+      throw new Error("Failed to fetch rooms");
     }
     return response.json();
   },
@@ -51,7 +63,7 @@ export const roomAPI = {
   getRoomById: async (roomId: string): Promise<Room> => {
     const response = await fetch(`${API_BASE_URL}/rooms/${roomId}`);
     if (!response.ok) {
-      throw new Error('Failed to fetch room');
+      throw new Error("Failed to fetch room");
     }
     return response.json();
   },
@@ -59,30 +71,33 @@ export const roomAPI = {
   // Create new room
   createRoom: async (roomData: CreateRoomData): Promise<Room> => {
     const response = await fetch(`${API_BASE_URL}/rooms`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(roomData),
     });
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Failed to create room');
+      throw new Error(error.message || "Failed to create room");
     }
     return response.json();
   },
 
   // Update room
-  updateRoom: async (roomId: string, roomData: UpdateRoomData): Promise<Room> => {
+  updateRoom: async (
+    roomId: string,
+    roomData: UpdateRoomData
+  ): Promise<Room> => {
     const response = await fetch(`${API_BASE_URL}/rooms/${roomId}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(roomData),
     });
     if (!response.ok) {
-      throw new Error('Failed to update room');
+      throw new Error("Failed to update room");
     }
     return response.json();
   },
@@ -90,14 +105,14 @@ export const roomAPI = {
   // Update room status only
   updateRoomStatus: async (roomId: string, status: string): Promise<Room> => {
     const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/status`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ status }),
     });
     if (!response.ok) {
-      throw new Error('Failed to update room status');
+      throw new Error("Failed to update room status");
     }
     return response.json();
   },
@@ -105,35 +120,42 @@ export const roomAPI = {
   // Delete room
   deleteRoom: async (roomId: string): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/rooms/${roomId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
     if (!response.ok) {
-      throw new Error('Failed to delete room');
+      throw new Error("Failed to delete room");
     }
   },
 
   // Get available rooms for date range
-  getAvailableRooms: async (propertyId: string, startDate: string, endDate: string): Promise<Room[]> => {
+  getAvailableRooms: async (
+    propertyId: string,
+    startDate: string,
+    endDate: string
+  ): Promise<Room[]> => {
     const response = await fetch(
       `${API_BASE_URL}/rooms/available?property_id=${propertyId}&start_date=${startDate}&end_date=${endDate}`
     );
     if (!response.ok) {
-      throw new Error('Failed to fetch available rooms');
+      throw new Error("Failed to fetch available rooms");
     }
     return response.json();
   },
 
   // Bulk create rooms
-  bulkCreateRooms: async (propertyId: string, rooms: CreateRoomData[]): Promise<Room[]> => {
+  bulkCreateRooms: async (
+    propertyId: string,
+    rooms: CreateRoomData[]
+  ): Promise<Room[]> => {
     const response = await fetch(`${API_BASE_URL}/rooms/bulk`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ property_id: propertyId, rooms }),
     });
     if (!response.ok) {
-      throw new Error('Failed to bulk create rooms');
+      throw new Error("Failed to bulk create rooms");
     }
     return response.json();
   },
