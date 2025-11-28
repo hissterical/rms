@@ -1,12 +1,12 @@
-import pg from 'pg';
+import pg from "pg";
 const { Pool } = pg;
 
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'hampihotels',
-  password: 'secret',
-  port: 5432
+  user: "postgres",
+  host: "localhost",
+  database: "hampihotels",
+  password: "secret",
+  port: 5432,
 });
 
 const query = `
@@ -16,12 +16,13 @@ const query = `
   ORDER BY ordinal_position;
 `;
 
-pool.query(query)
-  .then(res => {
+pool
+  .query(query)
+  .then((res) => {
     console.table(res.rows);
     pool.end();
   })
-  .catch(err => {
+  .catch((err) => {
     console.error(err);
     pool.end();
   });
