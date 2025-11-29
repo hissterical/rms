@@ -39,21 +39,26 @@ export default function NewPropertyPage() {
   const [formData, setFormData] = useState({
     // Property Details
     name: "",
-    property_type: "Hotel" as "Hotel" | "Resort" | "Guesthouse" | "Hostel" | "Apartment",
+    property_type: "Hotel" as
+      | "Hotel"
+      | "Resort"
+      | "Guesthouse"
+      | "Hostel"
+      | "Apartment",
     phone: "",
     website: "",
-    
+
     // Location
     city: "",
     state: "",
     country: "",
     address: "",
     zipCode: "",
-    
+
     // Additional
     description: "",
     main_image_url: "",
-    
+
     // For visualization
     numberOfFloors: 3,
     roomsPerFloor: 10,
@@ -63,7 +68,7 @@ export default function NewPropertyPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (currentStep < 2) {
       setCurrentStep(currentStep + 1);
       return;
@@ -82,8 +87,9 @@ export default function NewPropertyPage() {
 
     try {
       // Build the full address from components
-      const fullAddress = `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`.trim();
-      
+      const fullAddress =
+        `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`.trim();
+
       await propertyAPI.createProperty({
         name: formData.name,
         property_type: formData.property_type,
@@ -92,6 +98,8 @@ export default function NewPropertyPage() {
         website: formData.website || undefined,
         description: formData.description || undefined,
         main_image_url: formData.main_image_url || undefined,
+        numberOfFloors: formData.numberOfFloors,
+        roomsPerFloor: formData.roomsPerFloor,
       });
 
       toast({
@@ -119,8 +127,10 @@ export default function NewPropertyPage() {
     setFormData((prev) => {
       const newData = {
         ...prev,
-        [name]: name === 'numberOfFloors' || name === 'roomsPerFloor' ? 
-          Math.max(1, parseInt(value) || 1) : value
+        [name]:
+          name === "numberOfFloors" || name === "roomsPerFloor"
+            ? Math.max(1, parseInt(value) || 1)
+            : value,
       };
       return newData;
     });
@@ -138,14 +148,14 @@ export default function NewPropertyPage() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   };
 
   const renderStepIndicator = () => (
@@ -160,7 +170,7 @@ export default function NewPropertyPage() {
             }`}
             animate={{
               scale: step === currentStep ? 1.1 : 1,
-              backgroundColor: step <= currentStep ? "#475569" : "#e5e7eb"
+              backgroundColor: step <= currentStep ? "#475569" : "#e5e7eb",
             }}
           >
             {step}
@@ -185,10 +195,12 @@ export default function NewPropertyPage() {
       className="space-y-6"
     >
       <motion.div variants={itemVariants} className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Property Information</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Property Information
+        </h2>
         <p className="text-gray-600">Tell us about your property</p>
       </motion.div>
-      
+
       <motion.div variants={itemVariants} className="space-y-2">
         <Label htmlFor="name">Property Name *</Label>
         <div className="relative">
@@ -205,10 +217,13 @@ export default function NewPropertyPage() {
           />
         </div>
       </motion.div>
-      
+
       <motion.div variants={itemVariants} className="space-y-2">
         <Label htmlFor="property_type">Property Type *</Label>
-        <Select value={formData.property_type} onValueChange={(value) => handleSelectChange("property_type", value)}>
+        <Select
+          value={formData.property_type}
+          onValueChange={(value) => handleSelectChange("property_type", value)}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select property type" />
           </SelectTrigger>
@@ -221,7 +236,7 @@ export default function NewPropertyPage() {
           </SelectContent>
         </Select>
       </motion.div>
-      
+
       <div className="grid grid-cols-2 gap-4">
         <motion.div variants={itemVariants} className="space-y-2">
           <Label htmlFor="city">City *</Label>
@@ -239,7 +254,7 @@ export default function NewPropertyPage() {
             />
           </div>
         </motion.div>
-        
+
         <motion.div variants={itemVariants} className="space-y-2">
           <Label htmlFor="state">State/Province *</Label>
           <Input
@@ -253,7 +268,7 @@ export default function NewPropertyPage() {
           />
         </motion.div>
       </div>
-      
+
       <motion.div variants={itemVariants} className="space-y-2">
         <Label htmlFor="country">Country *</Label>
         <Input
@@ -266,7 +281,7 @@ export default function NewPropertyPage() {
           required
         />
       </motion.div>
-      
+
       <motion.div variants={itemVariants} className="space-y-2">
         <Label htmlFor="address">Street Address *</Label>
         <Textarea
@@ -279,7 +294,7 @@ export default function NewPropertyPage() {
           required
         />
       </motion.div>
-      
+
       <motion.div variants={itemVariants} className="space-y-2">
         <Label htmlFor="zipCode">ZIP/Postal Code *</Label>
         <div className="relative">
@@ -307,10 +322,14 @@ export default function NewPropertyPage() {
       className="space-y-6"
     >
       <motion.div variants={itemVariants} className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Additional Details</h2>
-        <p className="text-gray-600">Optional information about your property</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Additional Details
+        </h2>
+        <p className="text-gray-600">
+          Optional information about your property
+        </p>
       </motion.div>
-      
+
       <motion.div variants={itemVariants} className="space-y-2">
         <Label htmlFor="phone">Phone Number</Label>
         <div className="relative">
@@ -326,7 +345,7 @@ export default function NewPropertyPage() {
           />
         </div>
       </motion.div>
-      
+
       <motion.div variants={itemVariants} className="space-y-2">
         <Label htmlFor="website">Website</Label>
         <div className="relative">
@@ -342,7 +361,7 @@ export default function NewPropertyPage() {
           />
         </div>
       </motion.div>
-      
+
       <motion.div variants={itemVariants} className="space-y-2">
         <Label htmlFor="description">Property Description</Label>
         <Textarea
@@ -354,7 +373,7 @@ export default function NewPropertyPage() {
           onChange={handleInputChange}
         />
       </motion.div>
-      
+
       <motion.div variants={itemVariants} className="space-y-2">
         <Label htmlFor="main_image_url">Main Image URL</Label>
         <Input
@@ -365,9 +384,11 @@ export default function NewPropertyPage() {
           value={formData.main_image_url}
           onChange={handleInputChange}
         />
-        <p className="text-xs text-muted-foreground">Optional: URL to a main image of your property</p>
+        <p className="text-xs text-muted-foreground">
+          Optional: URL to a main image of your property
+        </p>
       </motion.div>
-      
+
       <div className="grid grid-cols-2 gap-4">
         <motion.div variants={itemVariants} className="space-y-2">
           <Label htmlFor="numberOfFloors">Number of Floors</Label>
@@ -381,9 +402,11 @@ export default function NewPropertyPage() {
             value={formData.numberOfFloors}
             onChange={handleInputChange}
           />
-          <p className="text-xs text-muted-foreground">For visualization only</p>
+          <p className="text-xs text-muted-foreground">
+            For visualization only
+          </p>
         </motion.div>
-        
+
         <motion.div variants={itemVariants} className="space-y-2">
           <Label htmlFor="roomsPerFloor">Rooms per Floor</Label>
           <Input
@@ -396,7 +419,9 @@ export default function NewPropertyPage() {
             value={formData.roomsPerFloor}
             onChange={handleInputChange}
           />
-          <p className="text-xs text-muted-foreground">For visualization only</p>
+          <p className="text-xs text-muted-foreground">
+            For visualization only
+          </p>
         </motion.div>
       </div>
     </motion.div>
@@ -410,7 +435,7 @@ export default function NewPropertyPage() {
             Only property owners can create properties
           </p>
           <div className="mt-4 flex justify-center">
-            <Link href="/dashboard/properties">
+            <Link href="/properties">
               <Button variant="outline">Go Back</Button>
             </Link>
           </div>
@@ -432,7 +457,7 @@ export default function NewPropertyPage() {
           <Card className="w-full max-w-md shadow-xl border-0">
             <CardHeader className="text-center pb-6">
               <div className="flex items-center justify-between mb-4">
-                <Link href="/properties">
+                <Link href="/dashboard/properties">
                   <Button variant="ghost" size="sm">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back
@@ -450,16 +475,18 @@ export default function NewPropertyPage() {
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-slate-800 bg-clip-text text-transparent">
                 Create Property
               </CardTitle>
-              <p className="text-muted-foreground mt-2">Add a new property to your portfolio</p>
+              <p className="text-muted-foreground mt-2">
+                Add a new property to your portfolio
+              </p>
             </CardHeader>
-            
+
             <CardContent>
               {renderStepIndicator()}
-              
+
               <form onSubmit={handleSubmit}>
                 {currentStep === 1 && renderStep1()}
                 {currentStep === 2 && renderStep2()}
-                
+
                 <div className="mt-8 flex flex-col space-y-4">
                   <Button
                     type="submit"
@@ -469,7 +496,11 @@ export default function NewPropertyPage() {
                     {isLoading ? (
                       <motion.div
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
                         className="h-4 w-4 border-2 border-current border-t-transparent rounded-full"
                       />
                     ) : currentStep < 2 ? (
@@ -484,7 +515,7 @@ export default function NewPropertyPage() {
                       </>
                     )}
                   </Button>
-                  
+
                   {currentStep > 1 && (
                     <Button
                       type="button"
@@ -500,7 +531,7 @@ export default function NewPropertyPage() {
             </CardContent>
           </Card>
         </motion.div>
-        
+
         {/* Illustration Section */}
         <motion.div
           initial={{ opacity: 0, x: 50 }}
@@ -511,9 +542,9 @@ export default function NewPropertyPage() {
           <Card className="w-full h-[600px] shadow-xl border-0 bg-gradient-to-br from-gray-50 to-slate-50 overflow-hidden">
             <CardContent className="h-full p-0 flex items-center justify-center">
               <div className="w-full max-w-full overflow-x-auto">
-                <BuildingIllustration 
-                  floors={formData.numberOfFloors} 
-                  roomsPerFloor={formData.roomsPerFloor} 
+                <BuildingIllustration
+                  floors={formData.numberOfFloors}
+                  roomsPerFloor={formData.roomsPerFloor}
                 />
               </div>
             </CardContent>

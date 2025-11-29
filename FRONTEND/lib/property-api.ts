@@ -32,6 +32,8 @@ export interface CreatePropertyData {
   phone?: string;
   website?: string;
   main_image_url?: string;
+  numberOfFloors?: number;
+  roomsPerFloor?: number;
 }
 
 export interface Manager {
@@ -67,7 +69,8 @@ export const propertyAPI = {
       const error = await response.json();
       throw new Error(error.message || "Failed to fetch property");
     }
-    return response.json();
+    const result = await response.json();
+    return result.data || result;
   },
 
   // Create new property (property owners only)
@@ -134,14 +137,14 @@ export const propertyAPI = {
   // Assign manager to property (property owners only)
   assignManager: async (
     propertyId: string,
-    managerId: string
+    managerEmail: string
   ): Promise<void> => {
     const response = await fetch(
       `${API_BASE_URL}/users/properties/${propertyId}/managers`,
       {
         method: "POST",
         headers: getAuthHeaders(),
-        body: JSON.stringify({ propertyId, managerId }),
+        body: JSON.stringify({ managerEmail }),
       }
     );
     if (!response.ok) {
