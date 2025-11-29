@@ -43,6 +43,121 @@ const upload = multer({
   },
 });
 
+// ====================
+// DEV ROUTES (No Auth Required) - Must be FIRST to avoid route conflicts
+// ====================
+
+// Get all menu items for a specific restaurant (no auth)
+router.get("/dev/:restaurantId", async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+    const result = await pool.query(
+      "SELECT * FROM menu_items WHERE restaurant_id = $1 ORDER BY category, name",
+      [restaurantId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching menu items:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Create menu item (no auth)
+router.post("/dev/:restaurantId", async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+    const { name, description, price, category, image_url, is_available } = req.body;
+
+    if (!name || !price) {
+      return res.status(400).json({ error: "Name and price are required" });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO menu_items (restaurant_id, name, description, price, category, image_url, is_available) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [
+        restaurantId,
+        name,
+        description || null,
+        parseFloat(price),
+        category || "mains",
+        image_url || null,
+        is_available !== false
+      ]
+    );
+
+    res.json({
+      message: "Menu item created successfully",
+      menuItem: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Error creating menu item:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Update menu item (no auth)
+router.put("/dev/:restaurantId/:id", async (req, res) => {
+  try {
+    const { restaurantId, id } = req.params;
+    const { name, description, price, category, image_url, is_available } = req.body;
+
+    const result = await pool.query(
+      `UPDATE menu_items 
+       SET name = $1, description = $2, price = $3, category = $4, image_url = $5, is_available = $6
+       WHERE id = $7 AND restaurant_id = $8
+       RETURNING *`,
+      [
+        name,
+        description || null,
+        parseFloat(price),
+        category || "mains",
+        image_url || null,
+        is_available !== false,
+        id,
+        restaurantId
+      ]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Menu item not found" });
+    }
+
+    res.json({
+      message: "Menu item updated successfully",
+      menuItem: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Error updating menu item:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Delete menu item (no auth)
+router.delete("/dev/:restaurantId/:id", async (req, res) => {
+  try {
+    const { restaurantId, id } = req.params;
+
+    const result = await pool.query(
+      "DELETE FROM menu_items WHERE id = $1 AND restaurant_id = $2 RETURNING *",
+      [id, restaurantId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Menu item not found" });
+    }
+
+    res.json({ message: "Menu item deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting menu item:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ====================
+// AUTHENTICATED ADMIN ROUTES
+// ====================
+
 // Get all menu items for a restaurant (admin view)
 router.get("/admin", authenticateAdmin, async (req, res) => {
   try {

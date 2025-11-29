@@ -1,0 +1,9 @@
+-- MIGRATION: UP
+
+ALTER TABLE properties 
+  ALTER COLUMN address TYPE TEXT;
+
+-- MIGRATION: DOWN
+
+ALTER TABLE properties 
+  ALTER COLUMN address TYPE VARCHAR(80);

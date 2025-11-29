@@ -11,43 +11,98 @@ export async function createPropertyService(data) {
     website,
     main_image_url,
     owner_id,
+    numberOfFloors,
+    roomsPerFloor,
   } = data;
 
   if (!name || !address || !property_type || !owner_id) {
     throw new Error("Missing required fields for creating property");
   }
 
-  const query = `
-    INSERT INTO properties (
-      name, address, description, property_type, phone, website, main_image_url, owner_id
-    ) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-    RETURNING *;
-  `;
-
-  const values = [
-    name,
-    address,
-    description || null,
-    property_type,
-    phone || null,
-    website || null,
-    main_image_url || null,
-    owner_id,
-  ];
+  const client = await pool.connect();
 
   try {
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    await client.query("BEGIN");
+
+    // Create the property
+    const propertyQuery = `
+      INSERT INTO properties (
+        name, address, description, property_type, phone, website, main_image_url, owner_id
+      ) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+      RETURNING *;
+    `;
+
+    const propertyValues = [
+      name,
+      address,
+      description || null,
+      property_type,
+      phone || null,
+      website || null,
+      main_image_url || null,
+      owner_id,
+    ];
+
+    console.log("Creating property with data:", {
+      name,
+      address,
+      property_type,
+      numberOfFloors,
+      roomsPerFloor,
+    });
+
+    const propertyResult = await client.query(propertyQuery, propertyValues);
+    const newProperty = propertyResult.rows[0];
+
+    // Create rooms if numberOfFloors and roomsPerFloor are provided
+    if (
+      numberOfFloors &&
+      roomsPerFloor &&
+      numberOfFloors > 0 &&
+      roomsPerFloor > 0
+    ) {
+      console.log(`Creating ${numberOfFloors * roomsPerFloor} rooms...`);
+
+      const roomInserts = [];
+      for (let floor = 1; floor <= numberOfFloors; floor++) {
+        for (let roomNum = 1; roomNum <= roomsPerFloor; roomNum++) {
+          const roomNumber = `${floor}${roomNum.toString().padStart(2, "0")}`;
+          roomInserts.push(
+            client.query(
+              `INSERT INTO rooms (property_id, room_number, floor, status) 
+               VALUES ($1, $2, $3, $4)`,
+              [newProperty.id, roomNumber, floor, "available"]
+            )
+          );
+        }
+      }
+
+      await Promise.all(roomInserts);
+      console.log(`Successfully created ${roomInserts.length} rooms`);
+    }
+
+    await client.query("COMMIT");
+    return newProperty;
   } catch (err) {
+    await client.query("ROLLBACK");
     console.error("Error creating property (service): ", err);
     throw err;
+  } finally {
+    client.release();
   }
 }
 
-export async function getPropertyByIdService(propertyId, ownerId) {
-  const query = `SELECT * FROM properties WHERE id = $1 AND owner_id = $2;`;
-  const values = [propertyId, ownerId];
+export async function getPropertyByIdService(propertyId, userId) {
+  const query = `
+    SELECT DISTINCT p.* 
+    FROM properties p
+    LEFT JOIN property_managers pm ON p.id = pm.property_id
+    WHERE p.id = $1 
+      AND (p.owner_id = $2 OR pm.manager_id = $2)
+    LIMIT 1;
+  `;
+  const values = [propertyId, userId];
   try {
     const result = await pool.query(query, values);
     return result.rows[0];
@@ -107,8 +162,6 @@ export async function updatePropertyService(propertyId, fields, ownerId) {
   }
 }
 
-// export async function getAllPropertiesService(filters) {}
-
 export async function deletePropertyService(propertyId, ownerId) {
   //need owner id
   const query = `DELETE FROM properties WHERE id=$1 AND owner_id = $2 RETURNING *;`;
@@ -123,8 +176,16 @@ export async function deletePropertyService(propertyId, ownerId) {
 }
 
 export async function createRoomService(roomData) {
-  const { property_id, owner_id, room_type_id, room_number, floor, status } =
-    roomData;
+  const {
+    property_id,
+    owner_id,
+    room_type,
+    capacity,
+    price,
+    room_number,
+    floor,
+    status,
+  } = roomData;
 
   try {
     // Verify property exists & belongs to owner
@@ -146,7 +207,9 @@ export async function createRoomService(roomData) {
 
     const allowedFields = [
       "property_id",
-      "room_type_id",
+      "room_type",
+      "capacity",
+      "price",
       "room_number",
       "floor",
       "status",
@@ -173,22 +236,32 @@ export async function createRoomService(roomData) {
   }
 }
 
-export async function getRoomsService(propertyId, ownerId) {
+export async function getRoomsService(propertyId, userId) {
+  console.log("getRoomsService called with:", { propertyId, userId });
+
   const query = `
-    SELECT 
+    SELECT DISTINCT
       r.id,
       r.room_number,
       r.floor,
       r.status,
-      r.room_type_id
+      r.room_type,
+      r.capacity,
+      r.price,
+      r.property_id
     FROM rooms r
     JOIN properties p ON r.property_id = p.id
+    LEFT JOIN property_managers pm ON p.id = pm.property_id
     WHERE r.property_id = $1
-      AND p.owner_id = $2;
+      AND (p.owner_id = $2 OR pm.manager_id = $2);
   `;
 
   try {
-    const result = await pool.query(query, [propertyId, ownerId]);
+    const result = await pool.query(query, [propertyId, userId]);
+    console.log("getRoomsService query result:", {
+      rowCount: result.rowCount,
+      rows: result.rows,
+    });
     return result.rows;
   } catch (err) {
     console.error("Error fetching rooms (service):", err);
@@ -208,7 +281,14 @@ export async function updateRoomService(roomId, propertyId, fields, ownerId) {
   if (checkResult.rowCount === 0) throw new Error("Room not found");
   if (checkResult.rows[0].owner_id !== ownerId) throw new Error("Unauthorized");
 
-  const allowedFields = ["room_type_id", "room_number", "floor", "status"];
+  const allowedFields = [
+    "room_type",
+    "capacity",
+    "price",
+    "room_number",
+    "floor",
+    "status",
+  ];
   const filteredFields = Object.fromEntries(
     Object.entries(fields).filter(([k]) => allowedFields.includes(k))
   );

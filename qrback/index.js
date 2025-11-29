@@ -20,11 +20,13 @@ const menuRoutes = require("./routes/menus");
 const { router: adminAuthRoutes } = require("./routes/adminAuth");
 const ordersRoutes = require("./routes/orders");
 const frontendRoutes = require("./routes/testFrontend");
+const chatbotRoutes = require("./routes/chatbot");
 
 app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/menus", menuRoutes);
 app.use("/api/admin", adminAuthRoutes);
 app.use(ordersRoutes);
+app.use(chatbotRoutes);
 app.use("/", frontendRoutes);
 
 // Menu display route (this will serve the customer-facing menu)
@@ -50,6 +52,7 @@ app.get("/admin-panel", (req, res) => {
 //   res.sendFile(path.join(__dirname, "public", "home.html"));
 // });
 
-app.listen(3000, "0.0.0.0", () => {
-  console.log("Server is running on port 3000");
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
