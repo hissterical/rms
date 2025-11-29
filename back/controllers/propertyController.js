@@ -25,6 +25,8 @@ export async function createProperty(req, res) {
       phone,
       website,
       main_image_url,
+      numberOfFloors,
+      roomsPerFloor,
     } = req.body;
     const owner_id = req.user?.id;
 
@@ -48,6 +50,8 @@ export async function createProperty(req, res) {
       website,
       main_image_url,
       owner_id,
+      numberOfFloors,
+      roomsPerFloor,
     };
     const newProperty = await createPropertyService(propertyData);
     return res.status(201).json(newProperty);
@@ -56,39 +60,6 @@ export async function createProperty(req, res) {
     return res.status(500).json({ message: "Failed to create property" });
   }
 }
-
-// export async function getAllProperties(req, res) {
-//   try {
-//     const { location, property_type, owner_id, search } = req.query;
-
-//     const filters = {};
-//     if (location) filters.location = location;
-//     if (property_type) filters.property_type = property_type;
-//     if (owner_id) filters.owner_id = owner_id;
-//     if (search) filters.search = search;
-
-//     const properties = await getAllPropertiesService(filters);
-
-//     if (!properties || properties.length === 0) {
-//       return res.status(200).json({
-//         success: true,
-//         message: "No properties found",
-//         data: [],
-//       });
-//     }
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Properties retrieved successfully",
-//       data: properties,
-//     });
-//   } catch (err) {
-//     console.error("Error fetching all properties:", err);
-//     return res
-//       .status(500)
-//       .json({ success: false, message: "Failed to fetch properties" });
-//   }
-// }
 
 export async function getPropertyById(req, res) {
   try {
@@ -225,23 +196,25 @@ export async function createRoomByPropertyId(req, res) {
       .json({ success: false, message: "PropertyId is required" });
   }
 
-  const { room_type_id, room_number, floor, status } = req.body;
+  const { room_type, capacity, price, room_number, floor, status } = req.body;
 
   if (!room_number) {
     return res
       .status(400)
       .json({ success: false, message: "Room number is required" });
   }
-  if (!room_type_id) {
+  if (!room_type) {
     return res
       .status(400)
-      .json({ success: false, message: "Room type ID is required" });
+      .json({ success: false, message: "Room type is required" });
   }
 
   try {
     const roomData = {
       property_id: propertyId,
-      room_type_id,
+      room_type,
+      capacity,
+      price,
       room_number,
       floor,
       status: status || "available",
@@ -268,6 +241,8 @@ export async function getRoomsByPropertyId(req, res) {
   const { propertyId } = req.params;
   const ownerId = req.user?.id;
 
+  console.log("getRoomsByPropertyId called:", { propertyId, ownerId });
+
   if (!ownerId) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
@@ -281,13 +256,20 @@ export async function getRoomsByPropertyId(req, res) {
   try {
     const rooms = await getRoomsService(propertyId, ownerId);
 
-    return res.status(200).json({
+    console.log("Rooms fetched from DB:", rooms);
+    console.log("Rooms count:", rooms.length);
+
+    const response = {
       success: true,
       message: rooms.length
         ? "Rooms retrieved successfully"
         : "No rooms found for this property",
       data: rooms,
-    });
+    };
+
+    console.log("Sending response:", response);
+
+    return res.status(200).json(response);
   } catch (err) {
     console.error(`Error fetching rooms for propertyId ${propertyId}:`, err);
     return res
@@ -340,10 +322,10 @@ export async function updateRoomById(req, res) {
       msg === "Room not found"
         ? 404
         : msg === "Unauthorized"
-          ? 403
-          : msg === "No valid fields to update"
-            ? 400
-            : 500;
+        ? 403
+        : msg === "No valid fields to update"
+        ? 400
+        : 500;
 
     return res.status(status).json({ success: false, message: msg });
   }
@@ -526,10 +508,10 @@ export async function updateRoomTypeById(req, res) {
       msg === "Room type not found"
         ? 404
         : msg === "Unauthorized"
-          ? 403
-          : msg === "No fields to update"
-            ? 400
-            : 500;
+        ? 403
+        : msg === "No fields to update"
+        ? 400
+        : 500;
 
     return res.status(status).json({ success: false, message: msg });
   }
