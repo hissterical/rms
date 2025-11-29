@@ -24,16 +24,28 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Login form submitted:", { email: formData.email });
     setIsLoading(true);
 
     try {
-      await login(formData.email, formData.password);
+      console.log("Calling login function...");
+      const userData = await login(formData.email, formData.password);
+      console.log("Login returned user data:", userData);
+
       toast({
         title: "Success!",
         description: "You have been logged in successfully.",
       });
-      router.push("/dashboard");
+
+      // Redirect based on role
+      console.log("Redirecting user based on role:", userData.role);
+      if (userData.role === "property_owner" || userData.role === "manager") {
+        router.push("/properties");
+      } else {
+        router.push("/");
+      }
     } catch (error: any) {
+      console.error("Login form error:", error);
       toast({
         title: "Login Failed",
         description: error.message || "Invalid email or password",

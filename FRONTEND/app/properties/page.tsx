@@ -44,7 +44,7 @@ export default function PropertiesPage() {
         description: "Only property owners and managers can access this page",
         variant: "destructive",
       });
-      router.push("/dashboard");
+      router.push("/");
       return;
     }
 
@@ -70,9 +70,7 @@ export default function PropertiesPage() {
   };
 
   const handlePropertyClick = (propertyId: string) => {
-    // Store selected property ID and redirect to dashboard
-    localStorage.setItem("selectedPropertyId", propertyId);
-    router.push("/dashboard");
+    router.push(`/${propertyId}/dashboard`);
   };
 
   const handleLogout = () => {
@@ -230,17 +228,18 @@ export default function PropertiesPage() {
                         Created{" "}
                         {new Date(property.created_at).toLocaleDateString()}
                       </span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePropertyClick(property.id);
-                        }}
-                      >
-                        Manage
-                        <Settings className="h-4 w-4 ml-2" />
-                      </Button>
+                      <Link href={`/${property.id}/settings`}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                        >
+                          Settings
+                          <Settings className="h-4 w-4 ml-2" />
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>

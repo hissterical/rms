@@ -124,10 +124,10 @@ export default function SignupPage() {
       });
 
       // Redirect based on role
-      if (formData.role === "property_owner") {
-        router.push("/dashboard/properties");
+      if (formData.role === "property_owner" || formData.role === "manager") {
+        router.push("/properties");
       } else {
-        router.push("/dashboard");
+        router.push("/");
       }
     } catch (error: any) {
       console.error("Registration error in component:", error);

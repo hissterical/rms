@@ -204,18 +204,43 @@ export async function getPropertiesByManagerId(managerId) {
   }
 }
 
-export async function addPropertyManager(propertyId, managerId) {
+export async function getUserByEmail(email) {
   try {
-    // Verify the manager has the 'manager' role
-    const userQuery = `SELECT role FROM users WHERE id = $1;`;
-    const userResult = await pool.query(userQuery, [managerId]);
+    const query = `SELECT id, first_name, last_name, email, phone, role, created_at FROM users WHERE email = $1;`;
+    const result = await pool.query(query, [email]);
+    return result.rows[0];
+  } catch (err) {
+    console.error("Error getting user by email:", err);
+    throw err;
+  }
+}
 
-    if (userResult.rows.length === 0) {
-      throw new Error("User not found");
-    }
+export async function addPropertyManager(propertyId, managerIdOrEmail) {
+  try {
+    let managerId = managerIdOrEmail;
 
-    if (userResult.rows[0].role !== "manager") {
-      throw new Error("User is not a manager");
+    // If managerIdOrEmail looks like an email, look up the user
+    if (managerIdOrEmail.includes("@")) {
+      const user = await getUserByEmail(managerIdOrEmail);
+      if (!user) {
+        throw new Error("No user found with that email");
+      }
+      if (user.role !== "manager") {
+        throw new Error("User with that email is not a manager");
+      }
+      managerId = user.id;
+    } else {
+      // Verify the manager has the 'manager' role
+      const userQuery = `SELECT role FROM users WHERE id = $1;`;
+      const userResult = await pool.query(userQuery, [managerId]);
+
+      if (userResult.rows.length === 0) {
+        throw new Error("User not found");
+      }
+
+      if (userResult.rows[0].role !== "manager") {
+        throw new Error("User is not a manager");
+      }
     }
 
     const query = `

@@ -30,7 +30,7 @@ export default function DashboardLayout({
           !window.location.pathname.includes("/properties")
         ) {
           // Redirect to properties selection page
-          router.push("/dashboard/properties");
+          // router.push("/dashboard/properties");
           return;
         }
 

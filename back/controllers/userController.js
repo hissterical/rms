@@ -101,11 +101,9 @@ export async function getMyProperties(req, res) {
     } else if (userRole === "manager") {
       properties = await getPropertiesByManagerId(userId);
     } else {
-      return res
-        .status(403)
-        .json({
-          message: "Only property owners and managers can view properties",
-        });
+      return res.status(403).json({
+        message: "Only property owners and managers can view properties",
+      });
     }
 
     res.json({ properties });
@@ -117,15 +115,16 @@ export async function getMyProperties(req, res) {
 
 export async function assignManager(req, res) {
   try {
-    const { propertyId, managerId } = req.body;
+    const { propertyId } = req.params;
+    const { managerEmail } = req.body;
 
-    if (!propertyId || !managerId) {
+    if (!propertyId || !managerEmail) {
       return res
         .status(400)
-        .json({ message: "Property ID and Manager ID are required" });
+        .json({ message: "Property ID and Manager Email are required" });
     }
 
-    const assignment = await addPropertyManager(propertyId, managerId);
+    const assignment = await addPropertyManager(propertyId, managerEmail);
 
     res.status(201).json({
       message: "Manager assigned successfully",
