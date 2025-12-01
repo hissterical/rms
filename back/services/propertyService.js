@@ -311,6 +311,43 @@ export async function updateRoomService(roomId, propertyId, fields, ownerId) {
   return result.rows[0];
 }
 
+export async function updateRoomStatusService(roomId, propertyId, status, ownerId) {
+  // validate status against enum allowed values
+  const allowedStatuses = ["available", "reserved", "occupied", "maintenance"];
+  if (!allowedStatuses.includes(status)) {
+    throw new Error("Invalid status");
+  }
+
+  // check property ownership and room existence
+  const checkQuery = `
+    SELECT r.id, r.property_id, p.owner_id
+    FROM rooms r
+    JOIN properties p ON r.property_id = p.id
+    WHERE r.id = $1 AND r.property_id = $2
+  `;
+
+  const checkResult = await pool.query(checkQuery, [roomId, propertyId]);
+
+  if (checkResult.rowCount === 0) {
+    throw new Error("Room not found");
+  }
+
+  if (checkResult.rows[0].owner_id !== ownerId) {
+    throw new Error("Unauthorized");
+  }
+
+  // update status only
+  const updateQuery = `
+    UPDATE rooms
+    SET status = $1
+    WHERE id = $2 AND property_id = $3
+    RETURNING id, property_id, room_number, floor, status;
+  `;
+
+  const result = await pool.query(updateQuery, [status, roomId, propertyId]);
+
+  return result.rows[0];
+}
 export async function deleteRoomService(propertyId, roomId, ownerId) {
   //ownerId or manager id
   const query = `

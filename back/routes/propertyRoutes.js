@@ -8,6 +8,7 @@ import {
   createRoomByPropertyId,
   updateRoomById,
   deleteRoomById,
+  updateRoomStatusById,
   getRoomTypesByPropertyId,
   createRoomTypeByPropertyId,
   updateRoomTypeById,
@@ -72,6 +73,12 @@ router.delete(
   deleteRoomById
 );
 
+router.patch(
+  "/:propertyId/rooms/:roomId/status",
+  authenticate,
+  requirePropertyAccess,
+  updateRoomStatusById
+);
 // room types under property - all require property access
 router.get(
   "/:propertyId/roomtypes",

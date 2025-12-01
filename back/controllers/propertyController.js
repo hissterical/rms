@@ -9,6 +9,7 @@ import {
   getRoomsService,
   updateRoomService,
   deleteRoomService,
+  updateRoomStatusService,
   createRoomTypeService,
   getRoomTypesService,
   updateRoomTypeService,
@@ -325,6 +326,53 @@ export async function updateRoomById(req, res) {
         ? 403
         : msg === "No valid fields to update"
         ? 400
+        : 500;
+
+    return res.status(status).json({ success: false, message: msg });
+  }
+}
+export async function updateRoomStatusById(req, res) {
+  const ownerId = req.user?.id;
+  const { propertyId, roomId } = req.params;
+  const { status } = req.body;
+
+  if (!ownerId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+  if (!propertyId) {
+    return res.status(400).json({ success: false, message: "PropertyId is required" });
+  }
+  if (!roomId) {
+    return res.status(400).json({ success: false, message: "Room ID is required" });
+  }
+  if (!status) {
+    return res.status(400).json({ success: false, message: "Status is required" });
+  }
+
+  const allowedStatuses = ["available", "reserved", "occupied", "maintenance"];
+
+  if (!allowedStatuses.includes(status)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid status. Allowed: ${allowedStatuses.join(", ")}`,
+    });
+  }
+
+  try {
+    const updatedRoom = await updateRoomStatusService(roomId, propertyId, status, ownerId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Room status updated successfully",
+      data: updatedRoom,
+    });
+  } catch (err) {
+    const msg = err.message;
+    const status =
+      msg === "Room not found"
+        ? 404
+        : msg === "Unauthorized"
+        ? 403
         : 500;
 
     return res.status(status).json({ success: false, message: msg });
