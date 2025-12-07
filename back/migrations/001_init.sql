@@ -24,7 +24,7 @@ CREATE TABLE room_types (
 );
 
 
-CREATE TABLE customers (
+CREATE TABLE users (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   first_name text NOT NULL,
   last_name text NOT NULL,  

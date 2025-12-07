@@ -1,4 +1,0 @@
--- MIGRATION: UP
-
-
-ALTER TABLE rooms DROP COLUMN booking_id
