@@ -8,6 +8,7 @@ import { useCurrentProperty } from "@/contexts/current-property-context";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PropertyRoomDetailModal } from "@/components/property-room-detail-modal";
 import {
   Users,
   Calendar,
@@ -79,6 +80,8 @@ export default function PropertyDashboard() {
     occupancyRate: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [roomModalOpen, setRoomModalOpen] = useState(false);
 
   console.log("Dashboard - currentProperty:", currentProperty);
   console.log("Dashboard - rooms:", rooms);
@@ -158,6 +161,16 @@ export default function PropertyDashboard() {
       maintenanceRooms,
       occupancyRate,
     });
+  };
+
+  const handleRoomClick = (room: Room) => {
+    setSelectedRoom(room);
+    setRoomModalOpen(true);
+  };
+
+  const handleRoomUpdated = () => {
+    // Reload dashboard data after room update
+    loadDashboardData();
   };
 
   if (!currentProperty) {
@@ -437,6 +450,12 @@ export default function PropertyDashboard() {
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded bg-blue-200 border-2 border-blue-400"></div>
+                          <span className="text-xs text-muted-foreground">
+                            Reserved
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
                           <div className="w-3 h-3 rounded bg-slate-700 border-2 border-slate-800"></div>
                           <span className="text-xs text-muted-foreground">
                             Occupied
@@ -566,6 +585,9 @@ export default function PropertyDashboard() {
                                               stiffness: 200,
                                             }}
                                             whileHover={{ scale: 1.08, y: -3 }}
+                                            onClick={() =>
+                                              handleRoomClick(room)
+                                            }
                                             className={`
                                               relative ${
                                                 floorRooms.length > 8
@@ -584,7 +606,7 @@ export default function PropertyDashboard() {
                                               room.room_number
                                             } - ${room.status} - ${
                                               room.room_type || "Standard"
-                                            }`}
+                                            } - Click to manage`}
                                           >
                                             <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                                               <span
@@ -668,6 +690,14 @@ export default function PropertyDashboard() {
           </>
         )}
       </main>
+
+      {/* Room Detail Modal */}
+      <PropertyRoomDetailModal
+        room={selectedRoom}
+        open={roomModalOpen}
+        onOpenChange={setRoomModalOpen}
+        onRoomUpdated={handleRoomUpdated}
+      />
     </div>
   );
 }

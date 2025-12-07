@@ -44,13 +44,13 @@ export async function createPropertyService(data) {
       owner_id,
     ];
 
-    console.log("Creating property with data:", {
-      name,
-      address,
-      property_type,
-      numberOfFloors,
-      roomsPerFloor,
-    });
+    // console.log("Creating property with data:", {
+    //   name,
+    //   address,
+    //   property_type,
+    //   numberOfFloors,
+    //   roomsPerFloor,
+    // });
 
     const propertyResult = await client.query(propertyQuery, propertyValues);
     const newProperty = propertyResult.rows[0];
@@ -62,7 +62,7 @@ export async function createPropertyService(data) {
       numberOfFloors > 0 &&
       roomsPerFloor > 0
     ) {
-      console.log(`Creating ${numberOfFloors * roomsPerFloor} rooms...`);
+      // console.log(`Creating ${numberOfFloors * roomsPerFloor} rooms...`);
 
       const roomInserts = [];
       for (let floor = 1; floor <= numberOfFloors; floor++) {
@@ -79,7 +79,7 @@ export async function createPropertyService(data) {
       }
 
       await Promise.all(roomInserts);
-      console.log(`Successfully created ${roomInserts.length} rooms`);
+      // console.log(`Successfully created ${roomInserts.length} rooms`);
     }
 
     await client.query("COMMIT");
@@ -176,6 +176,9 @@ export async function deletePropertyService(propertyId, ownerId) {
 }
 
 export async function createRoomService(roomData) {
+  // NOTE: Using room_type (text) directly instead of room_type_id for now
+  // This simplifies room creation without requiring room type management
+  // TODO: Implement proper room type management with room_types table relationship
   const {
     property_id,
     owner_id,
@@ -237,8 +240,11 @@ export async function createRoomService(roomData) {
 }
 
 export async function getRoomsService(propertyId, userId) {
-  console.log("getRoomsService called with:", { propertyId, userId });
+  // console.log("getRoomsService called with:", { propertyId, userId });
 
+  // NOTE: Fetching room_type (text) directly from rooms table
+  // room_type_id exists but is not used yet - it's for future room type management
+  // capacity and price are also stored directly on rooms for simplicity
   const query = `
     SELECT DISTINCT
       r.id,
@@ -258,10 +264,10 @@ export async function getRoomsService(propertyId, userId) {
 
   try {
     const result = await pool.query(query, [propertyId, userId]);
-    console.log("getRoomsService query result:", {
-      rowCount: result.rowCount,
-      rows: result.rows,
-    });
+    // console.log("getRoomsService query result:", {
+    //   rowCount: result.rowCount,
+    //   rows: result.rows,
+    // });
     return result.rows;
   } catch (err) {
     console.error("Error fetching rooms (service):", err);
@@ -270,6 +276,7 @@ export async function getRoomsService(propertyId, userId) {
 }
 
 export async function updateRoomService(roomId, propertyId, fields, ownerId) {
+  // Verify room exists and user has permission
   const checkQuery = `
     SELECT r.id, r.property_id, p.owner_id
     FROM rooms r
@@ -281,6 +288,9 @@ export async function updateRoomService(roomId, propertyId, fields, ownerId) {
   if (checkResult.rowCount === 0) throw new Error("Room not found");
   if (checkResult.rows[0].owner_id !== ownerId) throw new Error("Unauthorized");
 
+  // NOTE: Using room_type (text), capacity, and price directly on rooms table
+  // room_type_id column exists in schema but is not used yet
+  // This allows updating rooms without implementing full room type management
   const allowedFields = [
     "room_type",
     "capacity",
@@ -304,8 +314,15 @@ export async function updateRoomService(roomId, propertyId, fields, ownerId) {
     UPDATE rooms
     SET ${setClause}
     WHERE id = $${keys.length + 1} AND property_id = $${keys.length + 2}
-    RETURNING id, property_id, room_type_id, room_number, floor, status;
+    RETURNING id, property_id, room_number, floor, status, room_type, capacity, price;
   `;
+
+  // NOTE: room_type_id column was removed from RETURNING clause
+  // We're using room_type (text) directly for now instead of the foreign key
+  // TODO: When implementing proper room type management:
+  //   1. Create UI for managing room_types table
+  //   2. Update this to use room_type_id instead of room_type text
+  //   3. Join with room_types table to get room_type_name
 
   const result = await pool.query(updateQuery, [...values, roomId, propertyId]);
   return result.rows[0];
