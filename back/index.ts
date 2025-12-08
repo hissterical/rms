@@ -8,10 +8,9 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// CORS configuration
 app.use(
   cors({
-    origin: [ // CHANGE THISS !!!!!
+    origin: [
       "http://localhost:3000",
       "http://localhost:3001",
       "https://rms-ze-front.vercel.app",
@@ -21,13 +20,9 @@ app.use(
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    // 🔥 let cors decide headers based on Access-Control-Request-Headers
-    // allowedHeaders: undefined
+    allowedHeaders: ["content-type", "authorization"], // 🔥 REQUIRED
   })
 );
-
-// Make sure Express handles OPTIONS (if needed)
-app.options("*", cors());
 
 app.use(express.json());
 
