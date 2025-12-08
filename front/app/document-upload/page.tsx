@@ -1,56 +1,63 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
-import { PhotoCapture } from "@/components/photo-capture"
-import { useGuest } from "@/contexts/guest-context"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { 
-  Camera, 
-  ArrowLeft, 
-  User, 
-  IdCard, 
-  CheckCircle2, 
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { PhotoCapture } from "@/components/photo-capture";
+import { useGuest } from "@/contexts/guest-context";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Camera,
+  ArrowLeft,
+  User,
+  IdCard,
+  CheckCircle2,
   Upload,
   Users,
-  ArrowRight
-} from "lucide-react"
+  ArrowRight,
+} from "lucide-react";
 
 interface GuestData {
-  id: string
-  name: string
-  idType: string
-  idNumber: string
-  photoUrl: string
+  id: string;
+  name: string;
+  idType: string;
+  idNumber: string;
+  photoUrl: string;
 }
 
-export default function DocumentUploadPage() {
-  const searchParams = useSearchParams()
-  const bookingId = searchParams.get('booking') || 'BOOKING-DEFAULT'
-  
-  const router = useRouter()
-  const { setCheckInData } = useGuest()
-  
-  const [guests, setGuests] = useState<GuestData[]>([])
-  const [currentGuestIndex, setCurrentGuestIndex] = useState(0)
-  const [showCamera, setShowCamera] = useState(false)
-  const [numberOfGuests, setNumberOfGuests] = useState(1)
-  const [setupComplete, setSetupComplete] = useState(false)
-  
-  const [currentGuest, setCurrentGuest] = useState({
-    name: '',
-    idType: '',
-    idNumber: ''
-  })
+function DocumentUploadPageContent() {
+  const searchParams = useSearchParams();
+  const bookingId = searchParams.get("booking") || "BOOKING-DEFAULT";
 
-  const currentGuestData = guests[currentGuestIndex]
-  const allGuestsCompleted = guests.length === numberOfGuests && guests.every(g => g.photoUrl)
+  const router = useRouter();
+  const { setCheckInData } = useGuest();
+
+  const [guests, setGuests] = useState<GuestData[]>([]);
+  const [currentGuestIndex, setCurrentGuestIndex] = useState(0);
+  const [showCamera, setShowCamera] = useState(false);
+  const [numberOfGuests, setNumberOfGuests] = useState(1);
+  const [setupComplete, setSetupComplete] = useState(false);
+
+  const [currentGuest, setCurrentGuest] = useState({
+    name: "",
+    idType: "",
+    idNumber: "",
+  });
+
+  const currentGuestData = guests[currentGuestIndex];
+  const allGuestsCompleted =
+    guests.length === numberOfGuests && guests.every((g) => g.photoUrl);
 
   const handlePhotoCapture = (photoUrl: string) => {
     const newGuest: GuestData = {
@@ -58,62 +65,62 @@ export default function DocumentUploadPage() {
       name: currentGuest.name,
       idType: currentGuest.idType,
       idNumber: currentGuest.idNumber,
-      photoUrl
-    }
+      photoUrl,
+    };
 
-    setGuests(prev => {
-      const updated = [...prev]
-      updated[currentGuestIndex] = newGuest
-      return updated
-    })
-    
-    setShowCamera(false)
-    
+    setGuests((prev) => {
+      const updated = [...prev];
+      updated[currentGuestIndex] = newGuest;
+      return updated;
+    });
+
+    setShowCamera(false);
+
     // Move to next guest or complete
     if (currentGuestIndex < numberOfGuests - 1) {
-      setCurrentGuestIndex(prev => prev + 1)
-      setCurrentGuest({ name: '', idType: '', idNumber: '' })
+      setCurrentGuestIndex((prev) => prev + 1);
+      setCurrentGuest({ name: "", idType: "", idNumber: "" });
     }
-  }
+  };
 
   const handleStartCapture = () => {
     if (!currentGuest.name || !currentGuest.idType || !currentGuest.idNumber) {
-      alert('Please fill in all guest details before capturing photo')
-      return
+      alert("Please fill in all guest details before capturing photo");
+      return;
     }
-    setShowCamera(true)
-  }
+    setShowCamera(true);
+  };
 
   const handleProceedToCheckin = () => {
     // Save all guest data
     setCheckInData({
       bookingId,
-      roomNumber: '', // Will be assigned during check-in
-      guests: guests.map(g => ({
+      roomNumber: "", // Will be assigned during check-in
+      guests: guests.map((g) => ({
         id: g.id,
         guestName: g.name,
         idType: g.idType,
         idNumber: g.idNumber,
         photoUrl: g.photoUrl,
-        uploadedAt: new Date().toISOString()
+        uploadedAt: new Date().toISOString(),
       })),
       checkInDate: new Date().toISOString(),
-      checkOutDate: '',
-      purposeOfVisit: '',
+      checkOutDate: "",
+      purposeOfVisit: "",
       qrCode: bookingId,
-      verificationStatus: 'pending'
-    })
+      verificationStatus: "pending",
+    });
 
-    router.push('/check-in')
-  }
+    router.push("/check-in");
+  };
 
   const handleSetupGuests = () => {
     if (numberOfGuests < 1 || numberOfGuests > 10) {
-      alert('Please enter a valid number of guests (1-10)')
-      return
+      alert("Please enter a valid number of guests (1-10)");
+      return;
     }
-    setSetupComplete(true)
-  }
+    setSetupComplete(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-gray-50">
@@ -134,7 +141,9 @@ export default function DocumentUploadPage() {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-700 to-slate-800 bg-clip-text text-transparent">
                 Document Upload
               </h1>
-              <p className="text-sm text-gray-600">Upload photos and IDs for all guests</p>
+              <p className="text-sm text-gray-600">
+                Upload photos and IDs for all guests
+              </p>
             </div>
           </div>
         </div>
@@ -153,12 +162,14 @@ export default function DocumentUploadPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Booking ID</p>
-                  <p className="text-lg font-bold text-slate-700">{bookingId}</p>
+                  <p className="text-lg font-bold text-slate-700">
+                    {bookingId}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-600">Guests Completed</p>
                   <p className="text-lg font-bold text-slate-700">
-                    {guests.filter(g => g.photoUrl).length} / {numberOfGuests}
+                    {guests.filter((g) => g.photoUrl).length} / {numberOfGuests}
                   </p>
                 </div>
               </div>
@@ -194,7 +205,9 @@ export default function DocumentUploadPage() {
                       min="1"
                       max="10"
                       value={numberOfGuests}
-                      onChange={(e) => setNumberOfGuests(parseInt(e.target.value) || 1)}
+                      onChange={(e) =>
+                        setNumberOfGuests(parseInt(e.target.value) || 1)
+                      }
                       className="text-center text-2xl font-bold h-16"
                     />
                   </div>
@@ -223,9 +236,9 @@ export default function DocumentUploadPage() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {Array.from({ length: numberOfGuests }, (_, i) => {
-                    const guest = guests[i]
-                    const isCompleted = guest?.photoUrl
-                    const isCurrent = i === currentGuestIndex
+                    const guest = guests[i];
+                    const isCompleted = guest?.photoUrl;
+                    const isCurrent = i === currentGuestIndex;
 
                     return (
                       <motion.div
@@ -236,10 +249,10 @@ export default function DocumentUploadPage() {
                         onClick={() => !isCompleted && setCurrentGuestIndex(i)}
                         className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
                           isCurrent
-                            ? 'border-slate-600 bg-slate-50'
+                            ? "border-slate-600 bg-slate-50"
                             : isCompleted
-                            ? 'border-green-300 bg-green-50'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? "border-green-300 bg-green-50"
+                            : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -257,12 +270,16 @@ export default function DocumentUploadPage() {
                               {guest?.name || `Guest ${i + 1}`}
                             </p>
                             <p className="text-xs text-gray-500">
-                              {isCompleted ? 'Completed' : isCurrent ? 'In Progress' : 'Pending'}
+                              {isCompleted
+                                ? "Completed"
+                                : isCurrent
+                                ? "In Progress"
+                                : "Pending"}
                             </p>
                           </div>
                         </div>
                       </motion.div>
-                    )
+                    );
                   })}
                 </CardContent>
               </Card>
@@ -296,9 +313,11 @@ export default function DocumentUploadPage() {
                           <CheckCircle2 className="h-6 w-6 text-white" />
                         </div>
                       </div>
-                      
+
                       <div>
-                        <h3 className="text-xl font-bold">{currentGuestData.name}</h3>
+                        <h3 className="text-xl font-bold">
+                          {currentGuestData.name}
+                        </h3>
                         <p className="text-gray-600">
                           {currentGuestData.idType}: {currentGuestData.idNumber}
                         </p>
@@ -307,8 +326,12 @@ export default function DocumentUploadPage() {
                       {currentGuestIndex < numberOfGuests - 1 && (
                         <Button
                           onClick={() => {
-                            setCurrentGuestIndex(prev => prev + 1)
-                            setCurrentGuest({ name: '', idType: '', idNumber: '' })
+                            setCurrentGuestIndex((prev) => prev + 1);
+                            setCurrentGuest({
+                              name: "",
+                              idType: "",
+                              idNumber: "",
+                            });
                           }}
                           size="lg"
                           className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800"
@@ -329,7 +352,12 @@ export default function DocumentUploadPage() {
                             <Input
                               id="guestName"
                               value={currentGuest.name}
-                              onChange={(e) => setCurrentGuest(prev => ({ ...prev, name: e.target.value }))}
+                              onChange={(e) =>
+                                setCurrentGuest((prev) => ({
+                                  ...prev,
+                                  name: e.target.value,
+                                }))
+                              }
                               placeholder="Enter guest full name"
                               className="pl-10"
                             />
@@ -340,16 +368,27 @@ export default function DocumentUploadPage() {
                           <Label htmlFor="idType">ID Type</Label>
                           <Select
                             value={currentGuest.idType}
-                            onValueChange={(value) => setCurrentGuest(prev => ({ ...prev, idType: value }))}
+                            onValueChange={(value) =>
+                              setCurrentGuest((prev) => ({
+                                ...prev,
+                                idType: value,
+                              }))
+                            }
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select ID type" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="passport">Passport</SelectItem>
-                              <SelectItem value="drivers_license">Driver's License</SelectItem>
-                              <SelectItem value="national_id">National ID</SelectItem>
-                              <SelectItem value="aadhar">Aadhar Card</SelectItem>
+                              <SelectItem value="drivers_license">
+                                Driver's License
+                              </SelectItem>
+                              <SelectItem value="national_id">
+                                National ID
+                              </SelectItem>
+                              <SelectItem value="aadhar">
+                                Aadhar Card
+                              </SelectItem>
                               <SelectItem value="other">Other</SelectItem>
                             </SelectContent>
                           </Select>
@@ -362,7 +401,12 @@ export default function DocumentUploadPage() {
                             <Input
                               id="idNumber"
                               value={currentGuest.idNumber}
-                              onChange={(e) => setCurrentGuest(prev => ({ ...prev, idNumber: e.target.value }))}
+                              onChange={(e) =>
+                                setCurrentGuest((prev) => ({
+                                  ...prev,
+                                  idNumber: e.target.value,
+                                }))
+                              }
                               placeholder="Enter ID number"
                               className="pl-10"
                             />
@@ -374,14 +418,19 @@ export default function DocumentUploadPage() {
                         onClick={handleStartCapture}
                         size="lg"
                         className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 h-14"
-                        disabled={!currentGuest.name || !currentGuest.idType || !currentGuest.idNumber}
+                        disabled={
+                          !currentGuest.name ||
+                          !currentGuest.idType ||
+                          !currentGuest.idNumber
+                        }
                       >
                         <Camera className="mr-2 h-5 w-5" />
                         Capture Selfie Photo
                       </Button>
 
                       <p className="text-xs text-center text-gray-500">
-                        Make sure the guest's face is clearly visible in good lighting
+                        Make sure the guest's face is clearly visible in good
+                        lighting
                       </p>
                     </>
                   )}
@@ -406,7 +455,8 @@ export default function DocumentUploadPage() {
                         All Guests Registered!
                       </h3>
                       <p className="text-green-700 mt-2">
-                        All guest photos and documents have been uploaded successfully
+                        All guest photos and documents have been uploaded
+                        successfully
                       </p>
                     </div>
                     <Button
@@ -437,5 +487,19 @@ export default function DocumentUploadPage() {
         )}
       </AnimatePresence>
     </div>
-  )
+  );
+}
+
+export default function DocumentUploadPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <DocumentUploadPageContent />
+    </Suspense>
+  );
 }

@@ -1,22 +1,34 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
-import { useGuest } from "@/contexts/guest-context"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import Chatbot from "@/components/chatbot"
-import VoiceAssistant from "@/components/voice-assistant"
-import { 
-  ArrowLeft, 
-  Phone, 
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { useGuest } from "@/contexts/guest-context";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import Chatbot from "@/components/chatbot";
+import VoiceAssistant from "@/components/voice-assistant";
+import {
+  ArrowLeft,
+  Phone,
   AlertCircle,
   Sparkles,
   Wrench,
@@ -35,153 +47,162 @@ import {
   MicOff,
   Send,
   Home,
-  User
-} from "lucide-react"
+  User,
+} from "lucide-react";
 
-type ServiceCategory = 'emergency' | 'housekeeping' | 'maintenance' | 'concierge' | 'essentials' | 'other'
+type ServiceCategory =
+  | "emergency"
+  | "housekeeping"
+  | "maintenance"
+  | "concierge"
+  | "essentials"
+  | "other";
 
 interface ServiceRequest {
-  id: string
-  category: ServiceCategory
-  title: string
-  description: string
-  status: 'pending' | 'in-progress' | 'completed'
-  createdAt: string
+  id: string;
+  category: ServiceCategory;
+  title: string;
+  description: string;
+  status: "pending" | "in-progress" | "completed";
+  createdAt: string;
 }
 
-export default function RoomServicesPage() {
-  const searchParams = useSearchParams()
-  const roomNumber = searchParams.get('room') || '301'
-  
-  const router = useRouter()
-  const { addServiceRequest, serviceRequests } = useGuest()
-  
-  const [activeTab, setActiveTab] = useState<'services' | 'requests'>('services')
-  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null)
-  const [requestTitle, setRequestTitle] = useState('')
-  const [requestDescription, setRequestDescription] = useState('')
-  const [isListening, setIsListening] = useState(false)
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [isVoiceAssistantOpen, setIsVoiceAssistantOpen] = useState(false)
+function RoomServicesPageContent() {
+  const searchParams = useSearchParams();
+  const roomNumber = searchParams.get("room") || "301";
+
+  const router = useRouter();
+  const { addServiceRequest, serviceRequests } = useGuest();
+
+  const [activeTab, setActiveTab] = useState<"services" | "requests">(
+    "services"
+  );
+  const [selectedCategory, setSelectedCategory] =
+    useState<ServiceCategory | null>(null);
+  const [requestTitle, setRequestTitle] = useState("");
+  const [requestDescription, setRequestDescription] = useState("");
+  const [isListening, setIsListening] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isVoiceAssistantOpen, setIsVoiceAssistantOpen] = useState(false);
 
   // Emergency contact
-  const emergencyNumber = "+1 (555) 123-4567"
+  const emergencyNumber = "+1 (555) 123-4567";
 
   // Service categories
   const serviceCategories = [
     {
-      id: 'housekeeping' as ServiceCategory,
-      title: 'Housekeeping',
+      id: "housekeeping" as ServiceCategory,
+      title: "Housekeeping",
       icon: Sparkles,
-      color: 'from-slate-600 to-slate-700',
+      color: "from-slate-600 to-slate-700",
       items: [
-        'Room Cleaning',
-        'Fresh Towels',
-        'Bed Linens Change',
-        'Bathroom Cleaning',
-        'Vacuum Service'
-      ]
+        "Room Cleaning",
+        "Fresh Towels",
+        "Bed Linens Change",
+        "Bathroom Cleaning",
+        "Vacuum Service",
+      ],
     },
     {
-      id: 'maintenance' as ServiceCategory,
-      title: 'Maintenance',
+      id: "maintenance" as ServiceCategory,
+      title: "Maintenance",
       icon: Wrench,
-      color: 'from-teal-600 to-teal-700',
+      color: "from-teal-600 to-teal-700",
       items: [
-        'AC/Heating Issue',
-        'Plumbing Problem',
-        'Electrical Issue',
-        'Furniture Repair',
-        'TV/Electronics'
-      ]
+        "AC/Heating Issue",
+        "Plumbing Problem",
+        "Electrical Issue",
+        "Furniture Repair",
+        "TV/Electronics",
+      ],
     },
     {
-      id: 'essentials' as ServiceCategory,
-      title: 'Essentials',
+      id: "essentials" as ServiceCategory,
+      title: "Essentials",
       icon: Package,
-      color: 'from-cyan-600 to-cyan-700',
+      color: "from-cyan-600 to-cyan-700",
       items: [
-        'Extra Pillows',
-        'Blankets',
-        'Toiletries',
-        'Hangers',
-        'Iron/Ironing Board'
-      ]
+        "Extra Pillows",
+        "Blankets",
+        "Toiletries",
+        "Hangers",
+        "Iron/Ironing Board",
+      ],
     },
     {
-      id: 'concierge' as ServiceCategory,
-      title: 'Concierge',
+      id: "concierge" as ServiceCategory,
+      title: "Concierge",
       icon: Bell,
-      color: 'from-slate-700 to-slate-800',
+      color: "from-slate-700 to-slate-800",
       items: [
-        'Restaurant Booking',
-        'Transportation',
-        'Tour Information',
-        'Local Recommendations',
-        'Luggage Assistance'
-      ]
+        "Restaurant Booking",
+        "Transportation",
+        "Tour Information",
+        "Local Recommendations",
+        "Luggage Assistance",
+      ],
     },
     {
-      id: 'other' as ServiceCategory,
-      title: 'Other',
+      id: "other" as ServiceCategory,
+      title: "Other",
       icon: MessageSquare,
-      color: 'from-slate-500 to-slate-600',
-      items: [
-        'Custom Request'
-      ]
-    }
-  ]
+      color: "from-slate-500 to-slate-600",
+      items: ["Custom Request"],
+    },
+  ];
 
   // Voice Assistant
   const startVoiceAssistant = () => {
-    setIsListening(true)
-    
+    setIsListening(true);
+
     // Simulate voice recognition
     setTimeout(() => {
-      setRequestDescription("I need extra towels and pillows in room " + roomNumber)
-      setIsListening(false)
-    }, 3000)
-  }
+      setRequestDescription(
+        "I need extra towels and pillows in room " + roomNumber
+      );
+      setIsListening(false);
+    }, 3000);
+  };
 
   const stopVoiceAssistant = () => {
-    setIsListening(false)
-  }
+    setIsListening(false);
+  };
 
   // Handle service request
   const handleServiceRequest = (category: ServiceCategory, item: string) => {
-    setSelectedCategory(category)
-    setRequestTitle(item)
-    setRequestDescription(`Request for ${item} in Room ${roomNumber}`)
-  }
+    setSelectedCategory(category);
+    setRequestTitle(item);
+    setRequestDescription(`Request for ${item} in Room ${roomNumber}`);
+  };
 
   const submitServiceRequest = () => {
     if (!selectedCategory || !requestTitle) {
-      alert('Please select a service first')
-      return
+      alert("Please select a service first");
+      return;
     }
 
     addServiceRequest({
       type: selectedCategory,
       description: requestDescription || requestTitle,
-      status: 'pending'
-    })
+      status: "pending",
+    });
 
     // Show success modal
-    setShowSuccessModal(true)
-    
+    setShowSuccessModal(true);
+
     // Reset form
     setTimeout(() => {
-      setSelectedCategory(null)
-      setRequestTitle('')
-      setRequestDescription('')
-      setShowSuccessModal(false)
-    }, 2000)
-  }
+      setSelectedCategory(null);
+      setRequestTitle("");
+      setRequestDescription("");
+      setShowSuccessModal(false);
+    }, 2000);
+  };
 
   // Filter requests for this room
-  const roomRequests = serviceRequests.filter(req => 
+  const roomRequests = serviceRequests.filter((req) =>
     req.description.includes(roomNumber)
-  )
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-gray-50">
@@ -212,8 +233,8 @@ export default function RoomServicesPage() {
 
             {/* Emergency Button */}
             <a href={`tel:${emergencyNumber}`}>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg animate-pulse"
               >
                 <AlertCircle className="mr-2 h-5 w-5" />
@@ -225,16 +246,16 @@ export default function RoomServicesPage() {
           {/* Tab Navigation */}
           <div className="flex gap-2 mt-4">
             <Button
-              variant={activeTab === 'services' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('services')}
-              className={activeTab === 'services' ? 'bg-slate-700' : ''}
+              variant={activeTab === "services" ? "default" : "outline"}
+              onClick={() => setActiveTab("services")}
+              className={activeTab === "services" ? "bg-slate-700" : ""}
             >
               Services
             </Button>
             <Button
-              variant={activeTab === 'requests' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('requests')}
-              className={activeTab === 'requests' ? 'bg-slate-700' : ''}
+              variant={activeTab === "requests" ? "default" : "outline"}
+              onClick={() => setActiveTab("requests")}
+              className={activeTab === "requests" ? "bg-slate-700" : ""}
             >
               My Requests
               {roomRequests.length > 0 && (
@@ -250,7 +271,7 @@ export default function RoomServicesPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <AnimatePresence mode="wait">
-          {activeTab === 'services' ? (
+          {activeTab === "services" ? (
             /* Services Tab */
             <motion.div
               key="services"
@@ -268,9 +289,13 @@ export default function RoomServicesPage() {
                         <Phone className="h-8 w-8 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-red-900">24/7 Emergency</h3>
-                        <p className="text-red-700">Available anytime for urgent assistance</p>
-                        <a 
+                        <h3 className="text-xl font-bold text-red-900">
+                          24/7 Emergency
+                        </h3>
+                        <p className="text-red-700">
+                          Available anytime for urgent assistance
+                        </p>
+                        <a
                           href={`tel:${emergencyNumber}`}
                           className="text-2xl font-bold text-red-600 hover:text-red-700 transition-colors"
                         >
@@ -298,14 +323,21 @@ export default function RoomServicesPage() {
                           <Utensils className="h-8 w-8 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-slate-900">Restaurant Menu</h3>
-                          <p className="text-slate-700">Order food & beverages to your room</p>
+                          <h3 className="text-xl font-bold text-slate-900">
+                            Restaurant Menu
+                          </h3>
+                          <p className="text-slate-700">
+                            Order food & beverages to your room
+                          </p>
                           <p className="text-sm text-slate-600 mt-1">
                             Multi-language • Voice search • Group ordering
                           </p>
                         </div>
                       </div>
-                      <Button size="lg" className="bg-teal-600 hover:bg-teal-700 group-hover:scale-105 transition-transform">
+                      <Button
+                        size="lg"
+                        className="bg-teal-600 hover:bg-teal-700 group-hover:scale-105 transition-transform"
+                      >
                         Order Now
                       </Button>
                     </div>
@@ -328,7 +360,8 @@ export default function RoomServicesPage() {
                   <div className="p-4 bg-slate-50 rounded-lg text-center">
                     <Mic className="h-12 w-12 text-slate-600 mx-auto mb-2" />
                     <p className="text-sm text-slate-700">
-                      Use voice commands to request services, ask questions, and get instant voice replies
+                      Use voice commands to request services, ask questions, and
+                      get instant voice replies
                     </p>
                   </div>
 
@@ -340,14 +373,14 @@ export default function RoomServicesPage() {
                     <Mic className="mr-2 h-5 w-5" />
                     Open Voice Assistant
                   </Button>
-                  
+
                   <p className="text-xs text-slate-500 text-center">
                     AI-powered • Works in Chrome/Edge
                   </p>
                 </CardContent>
               </Card>
 
-            {/* Service Categories Grid */}
+              {/* Service Categories Grid */}
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {serviceCategories.map((category) => (
                   <motion.div
@@ -359,10 +392,14 @@ export default function RoomServicesPage() {
                     <Card className="shadow-lg hover:shadow-xl transition-all h-full">
                       <CardHeader>
                         <div className="flex items-center gap-3 mb-2">
-                          <div className={`h-12 w-12 bg-gradient-to-br ${category.color} rounded-xl flex items-center justify-center`}>
+                          <div
+                            className={`h-12 w-12 bg-gradient-to-br ${category.color} rounded-xl flex items-center justify-center`}
+                          >
                             <category.icon className="h-6 w-6 text-white" />
                           </div>
-                          <CardTitle className="text-xl">{category.title}</CardTitle>
+                          <CardTitle className="text-xl">
+                            {category.title}
+                          </CardTitle>
                         </div>
                       </CardHeader>
                       <CardContent>
@@ -372,7 +409,9 @@ export default function RoomServicesPage() {
                               key={index}
                               variant="outline"
                               className="w-full justify-start text-left hover:bg-slate-50 hover:border-slate-400"
-                              onClick={() => handleServiceRequest(category.id, item)}
+                              onClick={() =>
+                                handleServiceRequest(category.id, item)
+                              }
                             >
                               {item}
                             </Button>
@@ -412,11 +451,15 @@ export default function RoomServicesPage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="requestDescription">Additional Details (Optional)</Label>
+                        <Label htmlFor="requestDescription">
+                          Additional Details (Optional)
+                        </Label>
                         <Textarea
                           id="requestDescription"
                           value={requestDescription}
-                          onChange={(e) => setRequestDescription(e.target.value)}
+                          onChange={(e) =>
+                            setRequestDescription(e.target.value)
+                          }
                           placeholder="Any specific instructions or preferences..."
                           rows={4}
                         />
@@ -463,12 +506,14 @@ export default function RoomServicesPage() {
                   {roomRequests.length === 0 ? (
                     <div className="text-center py-12">
                       <Bell className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-600 text-lg">No service requests yet</p>
+                      <p className="text-gray-600 text-lg">
+                        No service requests yet
+                      </p>
                       <p className="text-gray-500 text-sm mt-2">
                         Submit a request from the Services tab
                       </p>
                       <Button
-                        onClick={() => setActiveTab('services')}
+                        onClick={() => setActiveTab("services")}
                         className="mt-4"
                         variant="outline"
                       >
@@ -491,35 +536,48 @@ export default function RoomServicesPage() {
                                   <div className="flex items-center gap-2 mb-2">
                                     <Badge
                                       variant={
-                                        request.status === 'completed' 
-                                          ? 'default' 
-                                          : request.status === 'in-progress'
-                                          ? 'secondary'
-                                          : 'outline'
+                                        request.status === "completed"
+                                          ? "default"
+                                          : request.status === "in-progress"
+                                          ? "secondary"
+                                          : "outline"
                                       }
                                       className={
-                                        request.status === 'completed'
-                                          ? 'bg-green-500'
-                                          : request.status === 'in-progress'
-                                          ? 'bg-blue-500'
-                                          : 'bg-yellow-500'
+                                        request.status === "completed"
+                                          ? "bg-green-500"
+                                          : request.status === "in-progress"
+                                          ? "bg-blue-500"
+                                          : "bg-yellow-500"
                                       }
                                     >
-                                      {request.status === 'completed' && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                                      {request.status === 'in-progress' && <Clock className="h-3 w-3 mr-1" />}
-                                      {request.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
-                                      {request.status.replace('-', ' ').toUpperCase()}
+                                      {request.status === "completed" && (
+                                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                                      )}
+                                      {request.status === "in-progress" && (
+                                        <Clock className="h-3 w-3 mr-1" />
+                                      )}
+                                      {request.status === "pending" && (
+                                        <Clock className="h-3 w-3 mr-1" />
+                                      )}
+                                      {request.status
+                                        .replace("-", " ")
+                                        .toUpperCase()}
                                     </Badge>
                                     <span className="text-xs text-gray-500 capitalize">
                                       {request.type}
                                     </span>
                                   </div>
-                                  <p className="font-semibold text-lg">{request.description}</p>
+                                  <p className="font-semibold text-lg">
+                                    {request.description}
+                                  </p>
                                   <p className="text-sm text-gray-600 mt-1">
-                                    Requested: {new Date(request.createdAt).toLocaleString()}
+                                    Requested:{" "}
+                                    {new Date(
+                                      request.createdAt
+                                    ).toLocaleString()}
                                   </p>
                                 </div>
-                                {request.status === 'completed' && (
+                                {request.status === "completed" && (
                                   <CheckCircle2 className="h-8 w-8 text-green-500" />
                                 )}
                               </div>
@@ -565,7 +623,8 @@ export default function RoomServicesPage() {
                 Request Submitted!
               </h3>
               <p className="text-gray-600">
-                Our team will respond shortly. You can track the status in "My Requests" tab.
+                Our team will respond shortly. You can track the status in "My
+                Requests" tab.
               </p>
             </motion.div>
           </motion.div>
@@ -573,13 +632,13 @@ export default function RoomServicesPage() {
       </AnimatePresence>
 
       {/* AI Chatbot */}
-      <Chatbot 
+      <Chatbot
         context={{
           roomNumber: roomNumber,
           hotelName: "Sohara Hotel",
-          services: serviceCategories.flatMap(cat => 
-            cat.items.map(item => `${cat.title}: ${item}`)
-          )
+          services: serviceCategories.flatMap((cat) =>
+            cat.items.map((item) => `${cat.title}: ${item}`)
+          ),
         }}
       />
 
@@ -589,9 +648,23 @@ export default function RoomServicesPage() {
         onClose={() => setIsVoiceAssistantOpen(false)}
         context={{
           roomNumber: roomNumber,
-          hotelName: "Sohara Hotel"
+          hotelName: "Sohara Hotel",
         }}
       />
     </div>
-  )
+  );
+}
+
+export default function RoomServicesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <RoomServicesPageContent />
+    </Suspense>
+  );
 }

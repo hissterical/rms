@@ -1,25 +1,39 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
-import { useGuest } from "@/contexts/guest-context"
-import { useVoiceSearch } from "@/hooks/use-voice-search"
-import { processVoiceSearchWithGemini, extractSearchKeywords } from "@/lib/voice-search-utils"
-import { generateMenuQRCode, downloadQRCode } from "@/lib/qr-utils"
-import { fetchMenu, createOrder, MenuItem as APIMenuItem, OrderItem as APIOrderItem } from "@/lib/api-config"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/hooks/use-toast"
-import Chatbot from "@/components/chatbot"
-import { 
-  ArrowLeft, 
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { useGuest } from "@/contexts/guest-context";
+import { useVoiceSearch } from "@/hooks/use-voice-search";
+import {
+  processVoiceSearchWithGemini,
+  extractSearchKeywords,
+} from "@/lib/voice-search-utils";
+import { generateMenuQRCode, downloadQRCode } from "@/lib/qr-utils";
+import {
+  fetchMenu,
+  createOrder,
+  MenuItem as APIMenuItem,
+  OrderItem as APIOrderItem,
+} from "@/lib/api-config";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import Chatbot from "@/components/chatbot";
+import {
+  ArrowLeft,
   QrCode,
   Mic,
   MicOff,
@@ -48,99 +62,109 @@ import {
   User,
   AlertCircle,
   Home,
-  Download
-} from "lucide-react"
+  Download,
+} from "lucide-react";
 
-type Language = 'en' | 'es' | 'fr' | 'de' | 'it' | 'zh' | 'ja' | 'ar'
+type Language = "en" | "es" | "fr" | "de" | "it" | "zh" | "ja" | "ar";
 
-type MenuCategory = 'appetizers' | 'mains' | 'desserts' | 'beverages' | 'specials'
+type MenuCategory =
+  | "appetizers"
+  | "mains"
+  | "desserts"
+  | "beverages"
+  | "specials";
 
 interface MenuItem {
-  id: string
-  name: string
-  nameTranslations: Record<Language, string>
-  description: string
-  descriptionTranslations: Record<Language, string>
-  price: number
-  category: MenuCategory
-  image: string
-  dietary: ('vegetarian' | 'vegan' | 'gluten-free' | 'spicy')[]
-  rating: number
-  prepTime: number
-  calories?: number
+  id: string;
+  name: string;
+  nameTranslations: Record<Language, string>;
+  description: string;
+  descriptionTranslations: Record<Language, string>;
+  price: number;
+  category: MenuCategory;
+  image: string;
+  dietary: ("vegetarian" | "vegan" | "gluten-free" | "spicy")[];
+  rating: number;
+  prepTime: number;
+  calories?: number;
 }
 
 interface CartItem extends MenuItem {
-  quantity: number
-  specialInstructions?: string
+  quantity: number;
+  specialInstructions?: string;
 }
 
 interface GroupMember {
-  id: string
-  name: string
-  items: CartItem[]
-  total: number
+  id: string;
+  name: string;
+  items: CartItem[];
+  total: number;
 }
 
-export default function FoodOrderingPage() {
-  const searchParams = useSearchParams()
-  const roomNumber = searchParams.get('room') || '301'
-  const tableNumber = searchParams.get('table') || '1'
-  const restaurantId = searchParams.get('restaurant') || '241022a8-f6a9-4a27-b110-9c63e8646493'
-  
-  const router = useRouter()
-  const { checkInData } = useGuest()
-  const { toast } = useToast()
-  
+function FoodOrderingPageContent() {
+  const searchParams = useSearchParams();
+  const roomNumber = searchParams.get("room") || "301";
+  const tableNumber = searchParams.get("table") || "1";
+  const restaurantId =
+    searchParams.get("restaurant") || "241022a8-f6a9-4a27-b110-9c63e8646493";
+
+  const router = useRouter();
+  const { checkInData } = useGuest();
+  const { toast } = useToast();
+
   // State management
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>('en')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [voiceSearchQuery, setVoiceSearchQuery] = useState('')
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<MenuCategory | 'all'>('all')
-  const [cart, setCart] = useState<CartItem[]>([])
-  const [showCart, setShowCart] = useState(false)
-  const [isGroupOrder, setIsGroupOrder] = useState(false)
-  const [groupMembers, setGroupMembers] = useState<GroupMember[]>([])
-  const [currentMember, setCurrentMember] = useState<string | null>(null)
-  const [showPayment, setShowPayment] = useState(false)
-  const [splitBillMode, setSplitBillMode] = useState<'equal' | 'individual' | 'custom'>('individual')
-  const [showQRMenu, setShowQRMenu] = useState(false)
-  const [callingWaiter, setCallingWaiter] = useState(false)
-  const [menuQRImage, setMenuQRImage] = useState<string>('')
-  const [generatingQR, setGeneratingQR] = useState(false)
-  
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>("en");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [voiceSearchQuery, setVoiceSearchQuery] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<
+    MenuCategory | "all"
+  >("all");
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const [isGroupOrder, setIsGroupOrder] = useState(false);
+  const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
+  const [currentMember, setCurrentMember] = useState<string | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [splitBillMode, setSplitBillMode] = useState<
+    "equal" | "individual" | "custom"
+  >("individual");
+  const [showQRMenu, setShowQRMenu] = useState(false);
+  const [callingWaiter, setCallingWaiter] = useState(false);
+  const [menuQRImage, setMenuQRImage] = useState<string>("");
+  const [generatingQR, setGeneratingQR] = useState(false);
+
   // API state
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
-  const [isLoadingMenu, setIsLoadingMenu] = useState(true)
-  const [menuError, setMenuError] = useState<string | null>(null)
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [isLoadingMenu, setIsLoadingMenu] = useState(true);
+  const [menuError, setMenuError] = useState<string | null>(null);
 
   // Language options
   const languages: { code: Language; name: string; flag: string }[] = [
-    { code: 'en', name: 'English', flag: '🇬🇧' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-    { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-    { code: 'zh', name: '中文', flag: '🇨🇳' },
-    { code: 'ja', name: '日本語', flag: '🇯🇵' },
-    { code: 'ar', name: 'العربية', flag: '🇸🇦' }
-  ]
+    { code: "en", name: "English", flag: "🇬🇧" },
+    { code: "es", name: "Español", flag: "🇪🇸" },
+    { code: "fr", name: "Français", flag: "🇫🇷" },
+    { code: "de", name: "Deutsch", flag: "🇩🇪" },
+    { code: "it", name: "Italiano", flag: "🇮🇹" },
+    { code: "zh", name: "中文", flag: "🇨🇳" },
+    { code: "ja", name: "日本語", flag: "🇯🇵" },
+    { code: "ar", name: "العربية", flag: "🇸🇦" },
+  ];
 
   // Map language codes to speech recognition language codes
   const getRecognitionLanguage = (lang: Language): string => {
     const langMap: Record<Language, string> = {
-      'en': 'en-US',
-      'es': 'es-ES',
-      'fr': 'fr-FR',
-      'de': 'de-DE',
-      'it': 'it-IT',
-      'zh': 'zh-CN',
-      'ja': 'ja-JP',
-      'ar': 'ar-SA'
-    }
-    return langMap[lang] || 'en-US'
-  }
+      en: "en-US",
+      es: "es-ES",
+      fr: "fr-FR",
+      de: "de-DE",
+      it: "it-IT",
+      zh: "zh-CN",
+      ja: "ja-JP",
+      ar: "ar-SA",
+    };
+    return langMap[lang] || "en-US";
+  };
 
   // Voice search hook with dynamic language - Simple STT to search bar
   const {
@@ -150,62 +174,68 @@ export default function FoodOrderingPage() {
     interimTranscript,
     startListening,
     stopListening,
-    resetTranscript
+    resetTranscript,
   } = useVoiceSearch({
     language: getRecognitionLanguage(selectedLanguage),
     continuous: false,
     interimResults: true,
     onResult: (finalTranscript) => {
       // Direct speech-to-text to search bar
-      setSearchQuery(finalTranscript)
+      setSearchQuery(finalTranscript);
       toast({
         title: "Voice search completed",
         description: `Searching for: ${finalTranscript}`,
-      })
+      });
     },
     onError: (error) => {
       toast({
         title: "Voice search error",
-        description: error === 'not-allowed' 
-          ? "Please allow microphone access to use voice search"
-          : "An error occurred during voice search",
-        variant: "destructive"
-      })
-    }
-  })
+        description:
+          error === "not-allowed"
+            ? "Please allow microphone access to use voice search"
+            : "An error occurred during voice search",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Update search bar with interim results while speaking
   useEffect(() => {
     if (isListening && interimTranscript) {
-      setSearchQuery(interimTranscript)
+      setSearchQuery(interimTranscript);
     }
-  }, [interimTranscript, isListening])
+  }, [interimTranscript, isListening]);
 
   // Fetch menu items from qrback API
   useEffect(() => {
     async function loadMenu() {
       try {
-        setIsLoadingMenu(true)
-        setMenuError(null)
-        
-        const apiMenuItems = await fetchMenu(restaurantId, tableNumber)
-        
+        setIsLoadingMenu(true);
+        setMenuError(null);
+
+        const apiMenuItems = await fetchMenu(restaurantId, tableNumber);
+
         // Transform API menu items to match UI structure
         const transformedItems: MenuItem[] = apiMenuItems.map((apiItem) => {
           // Parse dietary info if it's a JSON string or array
-          let dietaryArray: ('vegetarian' | 'vegan' | 'gluten-free' | 'spicy')[] = []
+          let dietaryArray: (
+            | "vegetarian"
+            | "vegan"
+            | "gluten-free"
+            | "spicy"
+          )[] = [];
           if (apiItem.dietary_info) {
             if (Array.isArray(apiItem.dietary_info)) {
-              dietaryArray = apiItem.dietary_info as any
-            } else if (typeof apiItem.dietary_info === 'string') {
+              dietaryArray = apiItem.dietary_info as any;
+            } else if (typeof apiItem.dietary_info === "string") {
               try {
-                dietaryArray = JSON.parse(apiItem.dietary_info)
+                dietaryArray = JSON.parse(apiItem.dietary_info);
               } catch {
-                dietaryArray = []
+                dietaryArray = [];
               }
             }
           }
-          
+
           // Create simple translations (same in all languages for now)
           const nameTranslations: Record<Language, string> = {
             en: apiItem.name,
@@ -215,147 +245,164 @@ export default function FoodOrderingPage() {
             it: apiItem.name,
             zh: apiItem.name,
             ja: apiItem.name,
-            ar: apiItem.name
-          }
-          
+            ar: apiItem.name,
+          };
+
           const descTranslations: Record<Language, string> = {
-            en: apiItem.description || '',
-            es: apiItem.description || '',
-            fr: apiItem.description || '',
-            de: apiItem.description || '',
-            it: apiItem.description || '',
-            zh: apiItem.description || '',
-            ja: apiItem.description || '',
-            ar: apiItem.description || ''
-          }
-          
+            en: apiItem.description || "",
+            es: apiItem.description || "",
+            fr: apiItem.description || "",
+            de: apiItem.description || "",
+            it: apiItem.description || "",
+            zh: apiItem.description || "",
+            ja: apiItem.description || "",
+            ar: apiItem.description || "",
+          };
+
           return {
             id: String(apiItem.id),
             name: apiItem.name,
             nameTranslations,
-            description: apiItem.description || '',
+            description: apiItem.description || "",
             descriptionTranslations: descTranslations,
             price: Number(apiItem.price),
-            category: (apiItem.category || 'mains') as MenuCategory,
-            image: apiItem.image_url || '/placeholder.jpg',
+            category: (apiItem.category || "mains") as MenuCategory,
+            image: apiItem.image_url || "/placeholder.jpg",
             dietary: dietaryArray,
             rating: 4.5, // Default rating
             prepTime: apiItem.prep_time || 15,
-            calories: apiItem.calories
-          }
-        })
-        
-        setMenuItems(transformedItems)
-        
+            calories: apiItem.calories,
+          };
+        });
+
+        setMenuItems(transformedItems);
+
         if (transformedItems.length === 0) {
           toast({
             title: "No menu items found",
-            description: "The restaurant menu is currently empty. Please contact staff.",
-            variant: "default"
-          })
+            description:
+              "The restaurant menu is currently empty. Please contact staff.",
+            variant: "default",
+          });
         }
       } catch (error) {
-        console.error('Error fetching menu:', error)
-        setMenuError(error instanceof Error ? error.message : 'Failed to load menu')
+        console.error("Error fetching menu:", error);
+        setMenuError(
+          error instanceof Error ? error.message : "Failed to load menu"
+        );
         toast({
           title: "Backend Not Connected",
-          description: "Could not connect to the restaurant system on port 3001. Please start the backend.",
-          variant: "destructive"
-        })
-        
+          description:
+            "Could not connect to the restaurant system on port 3001. Please start the backend.",
+          variant: "destructive",
+        });
+
         // Show empty state - no fallback data
-        setMenuItems([])
+        setMenuItems([]);
       } finally {
-        setIsLoadingMenu(false)
+        setIsLoadingMenu(false);
       }
     }
-    
-    loadMenu()
-  }, [restaurantId, tableNumber])
+
+    loadMenu();
+  }, [restaurantId, tableNumber]);
 
   const categories = [
-    { id: 'all' as const, name: 'All Items', icon: Utensils },
-    { id: 'appetizers' as const, name: 'Appetizers', icon: Pizza },
-    { id: 'mains' as const, name: 'Main Courses', icon: Utensils },
-    { id: 'desserts' as const, name: 'Desserts', icon: IceCream },
-    { id: 'beverages' as const, name: 'Beverages', icon: Coffee },
-    { id: 'specials' as const, name: 'Today\'s Specials', icon: Star }
-  ]
+    { id: "all" as const, name: "All Items", icon: Utensils },
+    { id: "appetizers" as const, name: "Appetizers", icon: Pizza },
+    { id: "mains" as const, name: "Main Courses", icon: Utensils },
+    { id: "desserts" as const, name: "Desserts", icon: IceCream },
+    { id: "beverages" as const, name: "Beverages", icon: Coffee },
+    { id: "specials" as const, name: "Today's Specials", icon: Star },
+  ];
 
   // Voice search functionality - Simple toggle
   const handleVoiceSearch = () => {
     if (!isSupported) {
       toast({
         title: "Voice search not supported",
-        description: "Your browser doesn't support voice recognition. Please use Chrome or Edge.",
-        variant: "destructive"
-      })
-      return
+        description:
+          "Your browser doesn't support voice recognition. Please use Chrome or Edge.",
+        variant: "destructive",
+      });
+      return;
     }
 
     if (isListening) {
-      stopListening()
+      stopListening();
       toast({
         title: "Stopped listening",
         description: "Voice search stopped",
-      })
+      });
     } else {
-      resetTranscript()
-      startListening()
+      resetTranscript();
+      startListening();
       toast({
         title: "Listening...",
         description: "Speak now to search the menu",
-      })
+      });
     }
-  }
+  };
 
   // Filter menu items
-  const filteredItems = menuItems.filter(item => {
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory
-    const matchesSearch = searchQuery === '' || 
-      item.nameTranslations[selectedLanguage].toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.descriptionTranslations[selectedLanguage].toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.dietary.some(d => d.toLowerCase().includes(searchQuery.toLowerCase()))
-    
-    return matchesCategory && matchesSearch
-  })
+  const filteredItems = menuItems.filter((item) => {
+    const matchesCategory =
+      selectedCategory === "all" || item.category === selectedCategory;
+    const matchesSearch =
+      searchQuery === "" ||
+      item.nameTranslations[selectedLanguage]
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      item.descriptionTranslations[selectedLanguage]
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      item.dietary.some((d) =>
+        d.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+    return matchesCategory && matchesSearch;
+  });
 
   // Cart management
   const addToCart = (item: MenuItem) => {
-    const existingItem = cart.find(cartItem => cartItem.id === item.id)
-    
+    const existingItem = cart.find((cartItem) => cartItem.id === item.id);
+
     if (existingItem) {
-      setCart(cart.map(cartItem => 
-        cartItem.id === item.id 
-          ? { ...cartItem, quantity: cartItem.quantity + 1 }
-          : cartItem
-      ))
+      setCart(
+        cart.map((cartItem) =>
+          cartItem.id === item.id
+            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+            : cartItem
+        )
+      );
     } else {
-      setCart([...cart, { ...item, quantity: 1 }])
+      setCart([...cart, { ...item, quantity: 1 }]);
     }
-  }
+  };
 
   const removeFromCart = (itemId: string) => {
-    const existingItem = cart.find(cartItem => cartItem.id === itemId)
-    
+    const existingItem = cart.find((cartItem) => cartItem.id === itemId);
+
     if (existingItem && existingItem.quantity > 1) {
-      setCart(cart.map(cartItem => 
-        cartItem.id === itemId 
-          ? { ...cartItem, quantity: cartItem.quantity - 1 }
-          : cartItem
-      ))
+      setCart(
+        cart.map((cartItem) =>
+          cartItem.id === itemId
+            ? { ...cartItem, quantity: cartItem.quantity - 1 }
+            : cartItem
+        )
+      );
     } else {
-      setCart(cart.filter(cartItem => cartItem.id !== itemId))
+      setCart(cart.filter((cartItem) => cartItem.id !== itemId));
     }
-  }
+  };
 
   const getCartTotal = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0)
-  }
+    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  };
 
   const getCartItemCount = () => {
-    return cart.reduce((total, item) => total + item.quantity, 0)
-  }
+    return cart.reduce((total, item) => total + item.quantity, 0);
+  };
 
   // Group ordering
   const addGroupMember = (name: string) => {
@@ -363,89 +410,95 @@ export default function FoodOrderingPage() {
       id: `member-${Date.now()}`,
       name,
       items: [],
-      total: 0
-    }
-    setGroupMembers([...groupMembers, newMember])
-  }
+      total: 0,
+    };
+    setGroupMembers([...groupMembers, newMember]);
+  };
 
   const assignItemToMember = (memberId: string, item: CartItem) => {
-    setGroupMembers(groupMembers.map(member => {
-      if (member.id === memberId) {
-        const existingItem = member.items.find(i => i.id === item.id)
-        if (existingItem) {
-          return {
-            ...member,
-            items: member.items.map(i => 
-              i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
-            ),
-            total: member.total + (item.price * item.quantity)
-          }
-        } else {
-          return {
-            ...member,
-            items: [...member.items, item],
-            total: member.total + (item.price * item.quantity)
+    setGroupMembers(
+      groupMembers.map((member) => {
+        if (member.id === memberId) {
+          const existingItem = member.items.find((i) => i.id === item.id);
+          if (existingItem) {
+            return {
+              ...member,
+              items: member.items.map((i) =>
+                i.id === item.id
+                  ? { ...i, quantity: i.quantity + item.quantity }
+                  : i
+              ),
+              total: member.total + item.price * item.quantity,
+            };
+          } else {
+            return {
+              ...member,
+              items: [...member.items, item],
+              total: member.total + item.price * item.quantity,
+            };
           }
         }
-      }
-      return member
-    }))
-  }
+        return member;
+      })
+    );
+  };
 
   // Call waiter
   const callWaiter = () => {
-    setCallingWaiter(true)
-    
+    setCallingWaiter(true);
+
     // Simulate calling waiter
     setTimeout(() => {
-      setCallingWaiter(false)
-      alert('Waiter has been notified and will arrive shortly!')
-    }, 2000)
-  }
+      setCallingWaiter(false);
+      alert("Waiter has been notified and will arrive shortly!");
+    }, 2000);
+  };
 
   // Payment
   const handlePayment = async () => {
     try {
       // Prepare order items for API
-      const orderItems: APIOrderItem[] = cart.map(item => ({
+      const orderItems: APIOrderItem[] = cart.map((item) => ({
         menu_item_id: Number(item.id),
         name: item.name,
         price: item.price,
         quantity: item.quantity,
-        special_notes: item.specialInstructions
-      }))
-      
+        special_notes: item.specialInstructions,
+      }));
+
       // Create order via API
       const order = await createOrder({
         restaurant_id: Number(restaurantId),
         table_number: Number(tableNumber),
         items: orderItems,
         total_amount: getCartTotal(),
-        customer_name: checkInData?.guests?.[0]?.guestName || 'Guest',
+        customer_name: checkInData?.guests?.[0]?.guestName || "Guest",
         special_instructions: cart
-          .filter(item => item.specialInstructions)
-          .map(item => `${item.name}: ${item.specialInstructions}`)
-          .join('; ')
-      })
-      
+          .filter((item) => item.specialInstructions)
+          .map((item) => `${item.name}: ${item.specialInstructions}`)
+          .join("; "),
+      });
+
       toast({
         title: "Order placed successfully!",
-        description: `Order #${order.id} - Total: $${getCartTotal().toFixed(2)}`,
-      })
-      
+        description: `Order #${order.id} - Total: $${getCartTotal().toFixed(
+          2
+        )}`,
+      });
+
       // Clear cart and close modals
-      setCart([])
-      setShowPayment(false)
-      setShowCart(false)
+      setCart([]);
+      setShowPayment(false);
+      setShowCart(false);
     } catch (error) {
-      console.error('Error placing order:', error)
+      console.error("Error placing order:", error);
       toast({
         title: "Failed to place order",
         description: "Please try again or contact staff for assistance.",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
@@ -460,7 +513,9 @@ export default function FoodOrderingPage() {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Restaurant Menu</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Restaurant Menu
+                </h1>
                 <p className="text-sm text-gray-600">
                   {tableNumber ? `Table ${tableNumber}` : `Room ${roomNumber}`}
                 </p>
@@ -471,10 +526,12 @@ export default function FoodOrderingPage() {
               {/* Language Selector */}
               <select
                 value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value as Language)}
+                onChange={(e) =>
+                  setSelectedLanguage(e.target.value as Language)
+                }
                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
-                {languages.map(lang => (
+                {languages.map((lang) => (
                   <option key={lang.code} value={lang.code}>
                     {lang.flag} {lang.name}
                   </option>
@@ -492,7 +549,11 @@ export default function FoodOrderingPage() {
                   <>
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
                     >
                       <Bell className="h-4 w-4 mr-2" />
                     </motion.div>
@@ -529,19 +590,23 @@ export default function FoodOrderingPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
                 type="text"
-                placeholder={`Search menu in ${languages.find(l => l.code === selectedLanguage)?.name}...`}
+                placeholder={`Search menu in ${
+                  languages.find((l) => l.code === selectedLanguage)?.name
+                }...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-4 py-6 text-lg"
               />
             </div>
-            
+
             <Button
               onClick={handleVoiceSearch}
               variant="outline"
               size="lg"
               disabled={isProcessing}
-              className={`px-6 ${isListening ? 'bg-red-50 border-red-500 text-red-600' : ''}`}
+              className={`px-6 ${
+                isListening ? "bg-red-50 border-red-500 text-red-600" : ""
+              }`}
             >
               {isListening ? (
                 <>
@@ -557,7 +622,11 @@ export default function FoodOrderingPage() {
                 <>
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   >
                     <Mic className="h-5 w-5 mr-2" />
                   </motion.div>
@@ -573,23 +642,26 @@ export default function FoodOrderingPage() {
 
             <Button
               onClick={async () => {
-                setShowQRMenu(true)
+                setShowQRMenu(true);
                 if (!menuQRImage) {
-                  setGeneratingQR(true)
+                  setGeneratingQR(true);
                   try {
-                    const restaurantId = 'restaurant-1' // Mock restaurant ID
-                    const table = tableNumber ? parseInt(tableNumber) : 1
-                    const qrDataURL = await generateMenuQRCode(restaurantId, table)
-                    setMenuQRImage(qrDataURL)
+                    const restaurantId = "restaurant-1"; // Mock restaurant ID
+                    const table = tableNumber ? parseInt(tableNumber) : 1;
+                    const qrDataURL = await generateMenuQRCode(
+                      restaurantId,
+                      table
+                    );
+                    setMenuQRImage(qrDataURL);
                   } catch (error) {
-                    console.error('Error generating QR code:', error)
+                    console.error("Error generating QR code:", error);
                     toast({
                       title: "Error",
                       description: "Failed to generate QR code",
-                      variant: "destructive"
-                    })
+                      variant: "destructive",
+                    });
                   } finally {
-                    setGeneratingQR(false)
+                    setGeneratingQR(false);
                   }
                 }
               }}
@@ -617,9 +689,12 @@ export default function FoodOrderingPage() {
               {voiceSearchQuery && (
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Volume2 className="h-4 w-4" />
-                  <span className="font-medium">You said:</span> "{voiceSearchQuery}"
+                  <span className="font-medium">You said:</span> "
+                  {voiceSearchQuery}"
                   {searchQuery !== voiceSearchQuery && (
-                    <span className="text-teal-600">→ Searching: "{searchQuery}"</span>
+                    <span className="text-teal-600">
+                      → Searching: "{searchQuery}"
+                    </span>
                   )}
                 </div>
               )}
@@ -638,23 +713,25 @@ export default function FoodOrderingPage() {
       {/* Category Tabs */}
       <div className="container mx-auto px-4 py-6">
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {categories.map(category => {
-            const Icon = category.icon
+          {categories.map((category) => {
+            const Icon = category.icon;
             return (
               <Button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                variant={selectedCategory === category.id ? "default" : "outline"}
+                variant={
+                  selectedCategory === category.id ? "default" : "outline"
+                }
                 className={`whitespace-nowrap ${
-                  selectedCategory === category.id 
-                    ? 'bg-teal-600 hover:bg-teal-700' 
-                    : ''
+                  selectedCategory === category.id
+                    ? "bg-teal-600 hover:bg-teal-700"
+                    : ""
                 }`}
               >
                 <Icon className="h-4 w-4 mr-2" />
                 {category.name}
               </Button>
-            )
+            );
           })}
         </div>
 
@@ -664,17 +741,17 @@ export default function FoodOrderingPage() {
             <Button
               onClick={() => setIsGroupOrder(!isGroupOrder)}
               variant={isGroupOrder ? "default" : "outline"}
-              className={isGroupOrder ? 'bg-slate-700 hover:bg-slate-800' : ''}
+              className={isGroupOrder ? "bg-slate-700 hover:bg-slate-800" : ""}
             >
               <Users className="h-4 w-4 mr-2" />
-              {isGroupOrder ? 'Group Order Active' : 'Enable Group Order'}
+              {isGroupOrder ? "Group Order Active" : "Enable Group Order"}
             </Button>
 
             {isGroupOrder && (
               <Button
                 onClick={() => {
-                  const name = prompt('Enter member name:')
-                  if (name) addGroupMember(name)
+                  const name = prompt("Enter member name:");
+                  if (name) addGroupMember(name);
                 }}
                 variant="outline"
                 size="sm"
@@ -693,13 +770,13 @@ export default function FoodOrderingPage() {
         {/* Group Members */}
         {isGroupOrder && groupMembers.length > 0 && (
           <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-            {groupMembers.map(member => (
+            {groupMembers.map((member) => (
               <Card
                 key={member.id}
                 className={`cursor-pointer transition-all ${
-                  currentMember === member.id 
-                    ? 'border-purple-500 bg-purple-50' 
-                    : 'border-gray-200'
+                  currentMember === member.id
+                    ? "border-purple-500 bg-purple-50"
+                    : "border-gray-200"
                 }`}
                 onClick={() => setCurrentMember(member.id)}
               >
@@ -751,130 +828,151 @@ export default function FoodOrderingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence mode="popLayout">
               {filteredItems.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                  <div className="relative h-48 bg-gradient-to-br from-orange-100 to-red-100 overflow-hidden">
-                    {/* Animated GIF placeholder */}
-                    <motion.div
-                      className="absolute inset-0 flex items-center justify-center"
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.3 }}
-                    >
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                    <div className="relative h-48 bg-gradient-to-br from-orange-100 to-red-100 overflow-hidden">
+                      {/* Animated GIF placeholder */}
                       <motion.div
-                        animate={{
-                          rotate: [0, 5, -5, 0],
-                          scale: [1, 1.05, 1]
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
+                        className="absolute inset-0 flex items-center justify-center"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.3 }}
                       >
-                        {item.category === 'appetizers' && <Pizza className="h-24 w-24 text-slate-400" />}
-                        {item.category === 'mains' && <Utensils className="h-24 w-24 text-slate-400" />}
-                        {item.category === 'desserts' && <IceCream className="h-24 w-24 text-slate-400" />}
-                        {item.category === 'beverages' && <Coffee className="h-24 w-24 text-slate-400" />}
+                        <motion.div
+                          animate={{
+                            rotate: [0, 5, -5, 0],
+                            scale: [1, 1.05, 1],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }}
+                        >
+                          {item.category === "appetizers" && (
+                            <Pizza className="h-24 w-24 text-slate-400" />
+                          )}
+                          {item.category === "mains" && (
+                            <Utensils className="h-24 w-24 text-slate-400" />
+                          )}
+                          {item.category === "desserts" && (
+                            <IceCream className="h-24 w-24 text-slate-400" />
+                          )}
+                          {item.category === "beverages" && (
+                            <Coffee className="h-24 w-24 text-slate-400" />
+                          )}
+                        </motion.div>
                       </motion.div>
-                    </motion.div>
 
-                    {/* Dietary badges */}
-                    <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-                      {item.dietary.includes('vegan') && (
-                        <Badge className="bg-teal-500 text-white">
-                          <Leaf className="h-3 w-3 mr-1" />
-                          Vegan
-                        </Badge>
-                      )}
-                      {item.dietary.includes('spicy') && (
-                        <Badge className="bg-red-500 text-white">
-                          <Flame className="h-3 w-3 mr-1" />
-                          Spicy
-                        </Badge>
-                      )}
-                      {item.dietary.includes('gluten-free') && (
-                        <Badge className="bg-slate-600 text-white text-xs">
-                          GF
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Rating */}
-                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
-                      <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                      <span className="text-xs font-medium">{item.rating}</span>
-                    </div>
-                  </div>
-
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-bold text-lg group-hover:text-slate-700 transition-colors">
-                        {item.nameTranslations[selectedLanguage]}
-                      </h3>
-                      <span className="text-xl font-bold text-teal-600">
-                        ${item.price.toFixed(2)}
-                      </span>
-                    </div>
-
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                      {item.descriptionTranslations[selectedLanguage]}
-                    </p>
-
-                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {item.prepTime} min
+                      {/* Dietary badges */}
+                      <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                        {item.dietary.includes("vegan") && (
+                          <Badge className="bg-teal-500 text-white">
+                            <Leaf className="h-3 w-3 mr-1" />
+                            Vegan
+                          </Badge>
+                        )}
+                        {item.dietary.includes("spicy") && (
+                          <Badge className="bg-red-500 text-white">
+                            <Flame className="h-3 w-3 mr-1" />
+                            Spicy
+                          </Badge>
+                        )}
+                        {item.dietary.includes("gluten-free") && (
+                          <Badge className="bg-slate-600 text-white text-xs">
+                            GF
+                          </Badge>
+                        )}
                       </div>
-                      {item.calories && (
-                        <div className="flex items-center gap-1">
-                          <Flame className="h-3 w-3" />
-                          {item.calories} cal
-                        </div>
-                      )}
+
+                      {/* Rating */}
+                      <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
+                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                        <span className="text-xs font-medium">
+                          {item.rating}
+                        </span>
+                      </div>
                     </div>
 
-                    <Button
-                      onClick={() => {
-                        addToCart(item)
-                        if (isGroupOrder && currentMember) {
-                          assignItemToMember(currentMember, { ...item, quantity: 1 })
-                        }
-                      }}
-                      className="w-full bg-teal-600 hover:bg-teal-700"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add to {isGroupOrder && currentMember ? 'Member\'s ' : ''}Order
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-bold text-lg group-hover:text-slate-700 transition-colors">
+                          {item.nameTranslations[selectedLanguage]}
+                        </h3>
+                        <span className="text-xl font-bold text-teal-600">
+                          ${item.price.toFixed(2)}
+                        </span>
+                      </div>
 
-          {filteredItems.length === 0 && !isLoadingMenu && (
-            <div className="col-span-full text-center py-12">
-              <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {menuItems.length === 0 ? "Backend Not Connected" : "No items found"}
-              </h3>
-              <p className="text-gray-600">
-                {menuItems.length === 0 
-                  ? "Please start the restaurant backend server on port 3001 to load menu data."
-                  : "Try adjusting your search or filters"}
-              </p>
-              {menuItems.length === 0 && (
-                <div className="text-sm text-gray-500 mt-4">
-                  <p>Run: <code className="bg-gray-100 px-2 py-1 rounded">cd qrback && npm start</code></p>
-                </div>
-              )}
-            </div>
-          )}
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                        {item.descriptionTranslations[selectedLanguage]}
+                      </p>
+
+                      <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {item.prepTime} min
+                        </div>
+                        {item.calories && (
+                          <div className="flex items-center gap-1">
+                            <Flame className="h-3 w-3" />
+                            {item.calories} cal
+                          </div>
+                        )}
+                      </div>
+
+                      <Button
+                        onClick={() => {
+                          addToCart(item);
+                          if (isGroupOrder && currentMember) {
+                            assignItemToMember(currentMember, {
+                              ...item,
+                              quantity: 1,
+                            });
+                          }
+                        }}
+                        className="w-full bg-teal-600 hover:bg-teal-700"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add to{" "}
+                        {isGroupOrder && currentMember ? "Member's " : ""}Order
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {filteredItems.length === 0 && !isLoadingMenu && (
+              <div className="col-span-full text-center py-12">
+                <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {menuItems.length === 0
+                    ? "Backend Not Connected"
+                    : "No items found"}
+                </h3>
+                <p className="text-gray-600">
+                  {menuItems.length === 0
+                    ? "Please start the restaurant backend server on port 3001 to load menu data."
+                    : "Try adjusting your search or filters"}
+                </p>
+                {menuItems.length === 0 && (
+                  <div className="text-sm text-gray-500 mt-4">
+                    <p>
+                      Run:{" "}
+                      <code className="bg-gray-100 px-2 py-1 rounded">
+                        cd qrback && npm start
+                      </code>
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -890,12 +988,12 @@ export default function FoodOrderingPage() {
               onClick={() => setShowCart(false)}
               className="fixed inset-0 bg-black/50 z-50"
             />
-            
+
             <motion.div
-              initial={{ x: '100%' }}
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
               className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
             >
               {/* Cart Header */}
@@ -915,28 +1013,38 @@ export default function FoodOrderingPage() {
                 {cart.length > 0 && (
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => setSplitBillMode('individual')}
-                      variant={splitBillMode === 'individual' ? 'default' : 'outline'}
+                      onClick={() => setSplitBillMode("individual")}
+                      variant={
+                        splitBillMode === "individual" ? "default" : "outline"
+                      }
                       size="sm"
-                      className={splitBillMode === 'individual' ? 'bg-teal-600' : ''}
+                      className={
+                        splitBillMode === "individual" ? "bg-teal-600" : ""
+                      }
                     >
                       <User className="h-3 w-3 mr-1" />
                       Individual
                     </Button>
                     <Button
-                      onClick={() => setSplitBillMode('equal')}
-                      variant={splitBillMode === 'equal' ? 'default' : 'outline'}
+                      onClick={() => setSplitBillMode("equal")}
+                      variant={
+                        splitBillMode === "equal" ? "default" : "outline"
+                      }
                       size="sm"
-                      className={splitBillMode === 'equal' ? 'bg-teal-600' : ''}
+                      className={splitBillMode === "equal" ? "bg-teal-600" : ""}
                     >
                       <Users className="h-3 w-3 mr-1" />
                       Split Equal
                     </Button>
                     <Button
-                      onClick={() => setSplitBillMode('custom')}
-                      variant={splitBillMode === 'custom' ? 'default' : 'outline'}
+                      onClick={() => setSplitBillMode("custom")}
+                      variant={
+                        splitBillMode === "custom" ? "default" : "outline"
+                      }
                       size="sm"
-                      className={splitBillMode === 'custom' ? 'bg-teal-600' : ''}
+                      className={
+                        splitBillMode === "custom" ? "bg-teal-600" : ""
+                      }
                     >
                       <Share2 className="h-3 w-3 mr-1" />
                       Custom
@@ -954,7 +1062,7 @@ export default function FoodOrderingPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {cart.map(item => (
+                    {cart.map((item) => (
                       <Card key={item.id}>
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-2">
@@ -1003,13 +1111,17 @@ export default function FoodOrderingPage() {
                   <div className="space-y-3 mb-4">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Subtotal</span>
-                      <span className="font-medium">${getCartTotal().toFixed(2)}</span>
+                      <span className="font-medium">
+                        ${getCartTotal().toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Tax (10%)</span>
-                      <span className="font-medium">${(getCartTotal() * 0.1).toFixed(2)}</span>
+                      <span className="font-medium">
+                        ${(getCartTotal() * 0.1).toFixed(2)}
+                      </span>
                     </div>
-                    {splitBillMode === 'equal' && (
+                    {splitBillMode === "equal" && (
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">Split between</span>
                         <Input
@@ -1071,7 +1183,9 @@ export default function FoodOrderingPage() {
                   <CreditCard className="h-5 w-5 mr-3" />
                   <div>
                     <div className="font-medium">Credit/Debit Card</div>
-                    <div className="text-sm text-gray-500">Pay securely with your card</div>
+                    <div className="text-sm text-gray-500">
+                      Pay securely with your card
+                    </div>
                   </div>
                 </Button>
 
@@ -1083,7 +1197,9 @@ export default function FoodOrderingPage() {
                   <DollarSign className="h-5 w-5 mr-3" />
                   <div>
                     <div className="font-medium">Cash on Delivery</div>
-                    <div className="text-sm text-gray-500">Pay when your order arrives</div>
+                    <div className="text-sm text-gray-500">
+                      Pay when your order arrives
+                    </div>
                   </div>
                 </Button>
 
@@ -1095,7 +1211,9 @@ export default function FoodOrderingPage() {
                   <Home className="h-5 w-5 mr-3" />
                   <div>
                     <div className="font-medium">Charge to Room</div>
-                    <div className="text-sm text-gray-500">Add to your room bill</div>
+                    <div className="text-sm text-gray-500">
+                      Add to your room bill
+                    </div>
                   </div>
                 </Button>
 
@@ -1107,7 +1225,9 @@ export default function FoodOrderingPage() {
                   <QrCode className="h-5 w-5 mr-3" />
                   <div>
                     <div className="font-medium">Digital Wallet</div>
-                    <div className="text-sm text-gray-500">Apple Pay, Google Pay, etc.</div>
+                    <div className="text-sm text-gray-500">
+                      Apple Pay, Google Pay, etc.
+                    </div>
                   </div>
                 </Button>
               </div>
@@ -1141,7 +1261,9 @@ export default function FoodOrderingPage() {
               onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
             >
-              <h3 className="text-2xl font-bold mb-4 text-center">Scan QR Code</h3>
+              <h3 className="text-2xl font-bold mb-4 text-center">
+                Scan QR Code
+              </h3>
               <p className="text-center text-gray-600 mb-6">
                 Share this menu with your dining companions
               </p>
@@ -1154,15 +1276,15 @@ export default function FoodOrderingPage() {
                 transition={{
                   duration: 2,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
                 }}
                 className="bg-gradient-to-br from-orange-100 to-red-100 p-8 rounded-xl mb-6"
               >
                 <div className="bg-white p-6 rounded-lg">
                   {menuQRImage && !generatingQR ? (
-                    <img 
-                      src={menuQRImage} 
-                      alt="Restaurant Menu QR Code" 
+                    <img
+                      src={menuQRImage}
+                      alt="Restaurant Menu QR Code"
                       className="w-48 h-48 mx-auto object-contain"
                     />
                   ) : (
@@ -1172,7 +1294,9 @@ export default function FoodOrderingPage() {
               </motion.div>
 
               <p className="text-center text-sm text-gray-500 mb-4">
-                {generatingQR ? 'Generating QR code...' : 'Scan to view menu in any language'}
+                {generatingQR
+                  ? "Generating QR code..."
+                  : "Scan to view menu in any language"}
               </p>
 
               <div className="flex gap-2 mb-4">
@@ -1180,21 +1304,25 @@ export default function FoodOrderingPage() {
                   onClick={async () => {
                     if (menuQRImage) {
                       try {
-                        const restaurantId = 'restaurant-1'
-                        const table = tableNumber ? parseInt(tableNumber) : 1
-                        const menuURL = `${typeof window !== 'undefined' ? window.location.origin : ''}/food?restaurant=${restaurantId}&table=${table}`
+                        const restaurantId = "restaurant-1";
+                        const table = tableNumber ? parseInt(tableNumber) : 1;
+                        const menuURL = `${
+                          typeof window !== "undefined"
+                            ? window.location.origin
+                            : ""
+                        }/food?restaurant=${restaurantId}&table=${table}`;
                         await downloadQRCode(menuURL, `menu-table-${table}`, {
-                          errorCorrectionLevel: 'M',
+                          errorCorrectionLevel: "M",
                           width: 400,
                           margin: 2,
-                        })
+                        });
                       } catch (error) {
-                        console.error('Error downloading QR code:', error)
+                        console.error("Error downloading QR code:", error);
                         toast({
                           title: "Error",
                           description: "Failed to download QR code",
-                          variant: "destructive"
-                        })
+                          variant: "destructive",
+                        });
                       }
                     }
                   }}
@@ -1208,11 +1336,13 @@ export default function FoodOrderingPage() {
                 <Button
                   onClick={() => {
                     if (navigator.share && menuQRImage) {
-                      navigator.share({
-                        title: 'Restaurant Menu',
-                        text: 'Check out our menu!',
-                        url: window.location.href
-                      }).catch(() => {})
+                      navigator
+                        .share({
+                          title: "Restaurant Menu",
+                          text: "Check out our menu!",
+                          url: window.location.href,
+                        })
+                        .catch(() => {});
                     }
                   }}
                   variant="outline"
@@ -1239,5 +1369,19 @@ export default function FoodOrderingPage() {
       {/* Chatbot */}
       <Chatbot />
     </div>
-  )
+  );
+}
+
+export default function FoodOrderingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <FoodOrderingPageContent />
+    </Suspense>
+  );
 }
