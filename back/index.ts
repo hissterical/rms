@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000;
 // CORS configuration
 app.use(
   cors({ // CHANGE THIS !!!!!!!!!
-    origin: ["http://localhost:3000", "http://localhost:3001", "https://rms-front-git-main-draxs-projects-939fc184.vercel.app", "https://hampilabs.com", "https://sohraa.com"],
+    origin: ["http://localhost:3000", "http://localhost:3001", "https://rms-ze-front.vercel.app/" ,"https://rms-front-git-main-draxs-projects-939fc184.vercel.app", "https://hampilabs.com", "https://sohraa.com"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
