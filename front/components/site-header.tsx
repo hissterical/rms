@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Menu, UserRound, Search } from "lucide-react"
-import { useState } from "react"
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Menu, UserRound, Search } from "lucide-react";
+import { useState } from "react";
 
 export function SiteHeader() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur animate-in slide-in-from-top duration-500">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -20,7 +20,13 @@ export function SiteHeader() {
             <Menu className="h-5 w-5" />
           </button>
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/Sohraa.png" alt="Sohraa logo" width={48} height={48} className="rounded" />
+            <Image
+              src="/Sohraa.png"
+              alt="Sohraa logo"
+              width={48}
+              height={48}
+              className="rounded"
+            />
             <span className="font-semibold tracking-tight">Sohraa</span>
           </Link>
         </div>
@@ -56,23 +62,38 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" aria-label="Search" className="transition-transform hover:scale-105 active:scale-95">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Search"
+            className="transition-transform hover:scale-105 active:scale-95"
+          >
             <Search className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
             <Link href="/login">
-              <Button variant="ghost" size="sm" className="hidden md:inline-flex transition-transform hover:scale-105 active:scale-95">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hidden md:inline-flex transition-transform hover:scale-105 active:scale-95"
+              >
                 Login
               </Button>
             </Link>
-            <Link href="/signup">
-              <Button size="sm" className="hidden md:inline-flex btn-fun bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 transition-transform hover:scale-105 active:scale-95">
+            <Link href="/register">
+              <Button
+                size="sm"
+                className="hidden md:inline-flex btn-fun bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 transition-transform hover:scale-105 active:scale-95"
+              >
                 <UserRound className="mr-2 h-4 w-4" />
                 Sign Up
               </Button>
             </Link>
             <Link href="/login">
-              <Button size="sm" className="md:hidden transition-transform hover:scale-105 active:scale-95">
+              <Button
+                size="sm"
+                className="md:hidden transition-transform hover:scale-105 active:scale-95"
+              >
                 <UserRound className="h-4 w-4" />
               </Button>
             </Link>
@@ -80,5 +101,5 @@ export function SiteHeader() {
         </div>
       </div>
     </header>
-  )
+  );
 }

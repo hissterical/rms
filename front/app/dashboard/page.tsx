@@ -194,7 +194,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <p className="text-gray-600 mb-4">Or create a new hotel profile:</p>
-          <Link href="/signup">
+          <Link href="/register">
             <Button className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white">
               Create Hotel Profile
             </Button>
