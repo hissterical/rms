@@ -26,7 +26,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+   `${process.env.NEXT_PUBLIC_API_URL}/api`||"http://localhost:5000/api"
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem("token");
